@@ -1,0 +1,11 @@
+
+body{
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items:center;
+    font-family: sans-serif;
+    color: rgb(88, 88, 85);
+    font-size:10px ;
+    background-color: rgb(247, 249, 251);
+}

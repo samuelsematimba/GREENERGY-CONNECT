@@ -1,0 +1,304 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREENERGY — Register Customer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'GREENERGYFORMS/favicon.png' %}">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --teal: #00B8A9;
+            --teal-dark: #008f84;
+            --ink: #0d1f1e;
+            --ink2: #112322;
+            --white: #ffffff;
+            --muted: rgba(255,255,255,0.5);
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(0,184,169,0.18);
+            --nav-h: 68px;
+        }
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--ink);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        /* bg */
+        body::before {
+            content: '';
+            position: fixed; inset: 0; z-index: 0;
+            background:
+                radial-gradient(ellipse at 10% 20%, rgba(0,184,169,0.12) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 80%, rgba(0,184,169,0.07) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--nav-h);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(13,31,30,0.85);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(0,184,169,0.12);
+        }
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none;
+        }
+        .nav-logo {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px;
+            color: var(--ink);
+        }
+        .nav-title {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 18px; color: var(--white);
+        }
+        .nav-title span { color: var(--teal); }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px;
+            background: transparent;
+            border: 1px solid rgba(0,184,169,0.3);
+            border-radius: 10px;
+            color: var(--white); font-size: 13px; font-weight: 600;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+            font-family: 'Syne', sans-serif;
+        }
+        .btn-back:hover { background: rgba(0,184,169,0.1); border-color: var(--teal); color: var(--teal); }
+
+        /* PAGE */
+        .page {
+            position: relative; z-index: 1;
+            padding-top: calc(var(--nav-h) + 48px);
+            padding-bottom: 64px;
+            max-width: 680px;
+            margin: 0 auto;
+            padding-left: 24px;
+            padding-right: 24px;
+            animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* HEADER */
+        .page-label {
+            font-size: 11px; font-weight: 600; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--teal); margin-bottom: 10px;
+        }
+        .page-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 32px; font-weight: 600; color: var(--white);
+            margin-bottom: 6px; line-height: 1.1;
+        }
+        .page-sub {
+            font-size: 15px; color: var(--muted); margin-bottom: 36px;
+        }
+
+        /* MESSAGES */
+        .msg {
+            padding: 14px 18px; border-radius: 12px;
+            margin-bottom: 20px; font-size: 14px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .msg-success { background: rgba(0,184,169,0.1); border: 1px solid rgba(0,184,169,0.3); color: #7fffd4; }
+        .msg-error { background: rgba(224,82,82,0.1); border: 1px solid rgba(224,82,82,0.3); color: #f8a0a0; }
+        .msg-warning { background: rgba(249,168,37,0.1); border: 1px solid rgba(249,168,37,0.3); color: #fcd34d; }
+
+        /* FORM CARD */
+        .form-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 36px;
+        }
+
+        .field { margin-bottom: 22px; }
+        .field label {
+            display: block;
+            font-size: 11px; font-weight: 600; letter-spacing: 1px;
+            text-transform: uppercase; color: var(--teal);
+            margin-bottom: 8px;
+        }
+        .field input, .field select {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,184,169,0.2);
+            border-radius: 12px;
+            padding: 13px 16px;
+            font-size: 15px; color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            -webkit-text-fill-color: var(--white);
+        }
+        .field input:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 1000px #112322 inset;
+            -webkit-text-fill-color: var(--white);
+        }
+        .field input:focus, .field select:focus {
+            border-color: var(--teal);
+            background: rgba(0,184,169,0.06);
+            box-shadow: 0 0 0 3px rgba(0,184,169,0.12);
+        }
+        .field input::placeholder { color: rgba(255,255,255,0.2); }
+        .field select option { background: #112322; color: var(--white); }
+
+        /* optional badge */
+        .optional {
+            font-size: 10px; font-weight: 400;
+            color: var(--muted); letter-spacing: 0;
+            text-transform: none; margin-left: 6px;
+        }
+
+        /* hint */
+        .field-hint {
+            font-size: 12px; color: var(--muted);
+            margin-top: 6px;
+        }
+
+        /* divider */
+        .form-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,184,169,0.2), transparent);
+            margin: 28px 0;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px; font-weight: 700;
+            color: rgba(255,255,255,0.4);
+            text-transform: uppercase; letter-spacing: 1.5px;
+            margin-bottom: 20px;
+        }
+
+        /* submit */
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, var(--teal) 0%, #00e5d4 100%);
+            border: none; border-radius: 12px;
+            padding: 15px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px; font-weight: 600; letter-spacing: 0.5px;
+            color: var(--ink); cursor: pointer;
+            margin-top: 8px;
+            box-shadow: 0 8px 24px rgba(0,184,169,0.3);
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+        }
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0,184,169,0.45);
+            filter: brightness(1.05);
+        }
+        .btn-submit:active { transform: translateY(0); }
+
+        @media (max-width: 600px) {
+            nav { padding: 0 20px; }
+            .form-card { padding: 24px 20px; }
+            .page-title { font-size: 26px; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'GREENERGYFORMS:index' %}" class="nav-brand">
+            <div class="nav-logo">
+                <img src="{% static 'GREENERGYFORMS/GREENERGY.png' %}" alt="logo" style="width:45px; height:36px;">
+            </div>
+            <span class="nav-title">GREEN<span>ERGY</span></span>
+        </a>
+        <a href="{% url 'GREENERGYFORMS:index' %}" class="btn-back">← Back to Home</a>
+    </nav>
+
+    <div class="page">
+        <p class="page-label">Empower Programme</p>
+        <h1 class="page-title">Register New Customer</h1>
+        <p class="page-sub">Fill in the details below to register a new customer into the Empower programme.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="msg msg-error">❌ {{ message }}</div>
+                {% elif message.tags == 'warning' %}
+                    <div class="msg msg-warning">⚠️ {{ message }}</div>
+                {% else %}
+                    <div class="msg msg-success">✅ {{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="form-card">
+            <form method="POST" action="{% url 'GREENERGYFORMS:empower_register' %}">
+                {% csrf_token %}
+
+                <p class="section-title">Customer Information</p>
+
+                <div class="field">
+                    <label for="full_name">Full Name</label>
+                    <input type="text" id="full_name" name="full_name"
+                           placeholder="Enter customer full name" required />
+                </div>
+
+                <div class="field">
+                    <label for="nin">NIN Number</label>
+                    <input type="text" id="nin" name="nin"
+                           placeholder="Enter National ID Number" required />
+                    <p class="field-hint">14-digit National Identification Number</p>
+                </div>
+
+                <div class="field">
+                    <label for="phone_number">Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number"
+                           placeholder="e.g. 0700 000 000" required />
+                </div>
+
+                <div class="field">
+                    <label for="outlet">Outlet / Location</label>
+                    <input type="text" id="outlet" name="outlet"
+                           placeholder="Enter outlet name or location" />
+                </div>
+
+                <div class="field">
+                    <label for="stove">Stove Number</label>
+                    <input type="text" id="stove" name="stove"
+                           placeholder="Enter stove Number" required  />
+                </div>
+
+                <div class="field">
+                    <label for="photo">Customer Compliance Photo</label>
+                    <input type="file" id="photo" name="photo" accept="image/*" required />
+                </div>
+
+                <div class="form-divider"></div>
+
+                <p class="section-title">Referral</p>
+
+                <div class="field">
+                    <label for="referral_code_used">
+                        Recommender Referral Code
+                        <span class="optional">(Optional)</span>
+                    </label>
+                    <input type="text" id="referral_code_used" name="referral_code_used"
+                           placeholder="EMP-XXXXXX" />
+                    <p class="field-hint">Leave blank if the customer was not referred by anyone</p>
+                </div>
+
+                <button type="submit" class="btn-submit">Register Customer →</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

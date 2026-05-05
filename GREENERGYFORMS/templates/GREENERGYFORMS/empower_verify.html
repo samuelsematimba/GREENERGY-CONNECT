@@ -1,0 +1,349 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREENERGY — Verify Empower Receipt</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'GREENERGYFORMS/favicon.png' %}">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --teal: #00B8A9;
+            --ink: #0d1f1e;
+            --white: #ffffff;
+            --muted: rgba(255,255,255,0.5);
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(0,184,169,0.18);
+            --nav-h: 68px;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--ink); color: var(--white); min-height: 100vh; }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at 10% 20%, rgba(0,184,169,0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 90% 80%, rgba(0,184,169,0.07) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--nav-h);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(13,31,30,0.85); backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(0,184,169,0.12);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border-radius: 9px; display: flex; align-items: center; justify-content: center;
+        }
+        .nav-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--white); }
+        .nav-title span { color: var(--teal); }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; background: transparent;
+            border: 1px solid rgba(0,184,169,0.3); border-radius: 10px;
+            color: var(--white); font-size: 13px; font-weight: 600;
+            text-decoration: none; font-family: 'Syne', sans-serif;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        .btn-back:hover { background: rgba(0,184,169,0.1); border-color: var(--teal); color: var(--teal); }
+
+        .page {
+            position: relative; z-index: 1;
+            padding-top: calc(var(--nav-h) + 48px);
+            padding-bottom: 64px;
+            max-width: 620px; margin: 0 auto;
+            padding-left: 24px; padding-right: 24px;
+            animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes slideUp { from { opacity:0; transform:translateY(24px); } to { opacity:1; transform:translateY(0); } }
+
+        .page-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 600; margin-bottom: 6px; }
+        .page-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+
+        /* ── SEARCH CARD ── */
+        .form-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 32px; margin-bottom: 28px;
+        }
+        .field { margin-bottom: 18px; }
+        .field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+        .field input {
+            width: 100%; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,184,169,0.2); border-radius: 12px;
+            padding: 13px 16px; font-size: 15px; color: var(--white);
+            font-family: 'DM Sans', sans-serif; outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            -webkit-text-fill-color: var(--white);
+            text-transform: uppercase; letter-spacing: 2px;
+        }
+        .field input:focus { border-color: var(--teal); background: rgba(0,184,169,0.06); box-shadow: 0 0 0 3px rgba(0,184,169,0.12); }
+        .field input::placeholder { text-transform: none; letter-spacing: normal; color: rgba(255,255,255,0.2); }
+        .btn-verify {
+            width: 100%; background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border: none; border-radius: 12px; padding: 14px;
+            font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+            color: var(--ink); cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,184,169,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-verify:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,184,169,0.45); }
+
+        /* ── NOT FOUND ── */
+        .not-found {
+            background: rgba(224,82,82,0.07); border: 1px solid rgba(224,82,82,0.25);
+            border-radius: 16px; padding: 28px 24px; text-align: center;
+            margin-bottom: 24px; animation: slideUp 0.4s ease both;
+        }
+        .not-found-icon { font-size: 36px; margin-bottom: 12px; }
+        .not-found-title { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: #f8a0a0; margin-bottom: 6px; }
+        .not-found-sub { font-size: 14px; color: var(--muted); }
+        .not-found-code { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; color: rgba(248,160,160,0.7); letter-spacing: 2px; margin: 12px 0 4px; }
+
+        /* ── VERIFIED RESULT ── */
+        .verified-banner {
+            display: flex; align-items: center; gap: 14px;
+            background: rgba(0,184,169,0.1); border: 1px solid rgba(0,184,169,0.35);
+            border-radius: 14px; padding: 16px 20px; margin-bottom: 20px;
+            animation: slideUp 0.4s ease both;
+        }
+        .verified-icon { font-size: 28px; flex-shrink: 0; }
+        .verified-text-head { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; color: var(--teal); }
+        .verified-text-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+
+        .result-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 20px; overflow: hidden; margin-bottom: 20px;
+            animation: slideUp 0.45s ease both;
+        }
+        .result-header {
+            background: rgba(0,184,169,0.08); border-bottom: 1px solid rgba(0,184,169,0.15);
+            padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+        }
+        .result-sales-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); margin-bottom: 4px; }
+        .result-sales-num { font-family: sans-serif; font-size: 22px; font-weight: 600; color: var(--teal); letter-spacing: 2px; }
+        .status-badge {
+            padding: 5px 14px; border-radius: 20px;
+            font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .status-claimed { background: rgba(0,184,169,0.15); border: 1px solid rgba(0,184,169,0.4); color: var(--teal); }
+
+        .result-body { padding: 24px; }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-bottom: 24px; }
+        .result-field-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 4px; }
+        .result-field-value { font-size: 15px; font-weight: 500; color: var(--white); }
+        .result-field-value.highlight { color: var(--teal); font-weight: 700; }
+
+        /* ── CLAIM BREAKDOWN TABLE ── */
+        .breakdown-title {
+            font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+            color: var(--white); margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .breakdown-table { width: 100%; border-collapse: collapse; }
+        .breakdown-table th {
+            font-size: 11px; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--muted); font-weight: 600; padding: 8px 10px; text-align: left;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .breakdown-table td {
+            font-size: 13px; color: rgba(255,255,255,0.85);
+            padding: 10px 10px; border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .breakdown-table tr:last-child td { border-bottom: none; }
+        .breakdown-table td:first-child { color: var(--teal); font-weight: 700; font-size: 12px; }
+
+        /* ── MISMATCH WARNING ── */
+        .mismatch-box {
+            background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.3);
+            border-radius: 12px; padding: 16px 18px; margin-top: 16px;
+            font-size: 13px; color: #fed7aa;
+            display: flex; align-items: flex-start; gap: 10px;
+        }
+        .mismatch-icon { flex-shrink: 0; font-size: 18px; }
+
+        /* ── VERIFY ANOTHER ── */
+        .btn-another {
+            display: block; width: 100%; text-align: center;
+            padding: 13px; background: transparent;
+            border: 1px solid var(--card-border); border-radius: 12px;
+            font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 600;
+            color: var(--white); cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        }
+        .btn-another:hover { border-color: var(--teal); background: rgba(0,184,169,0.06); }
+
+        @media (max-width: 600px) {
+            nav { padding: 0 20px; }
+            .form-card { padding: 24px 18px; }
+            .result-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+<nav>
+    <a href="{% url 'GREENERGYFORMS:index' %}" class="nav-brand">
+        <div class="nav-logo">
+            <img src="{% static 'GREENERGYFORMS/GREENERGY.png' %}" alt="logo" style="width:45px; height:36px;">
+        </div>
+        <span class="nav-title">GREEN<span>ERGY</span></span>
+    </a>
+    <a href="{% url 'GREENERGYFORMS:empower_records' %}" class="btn-back">← Back to Records</a>
+</nav>
+
+<div class="page">
+    <p class="page-label">Back Office</p>
+    <h1 class="page-title">Verify Receipt</h1>
+    <p class="page-sub">Enter a sales number from an outlet report to verify the checkout and confirm the customer details.</p>
+
+    {# ── SEARCH FORM ── #}
+    <div class="form-card">
+        <form method="POST" action="{% url 'GREENERGYFORMS:empower_verify' %}">
+            {% csrf_token %}
+            <div class="field">
+                <label for="sales_number">Receipt Number</label>
+                <input type="text" id="sales_number" name="sales_number"
+                       value="{{ searched_number|default:'' }}"
+                       placeholder="e.g.EMP-20260505-A3K7"
+                       maxlength="30" required />
+            </div>
+            <button type="submit" class="btn-verify">Verify Receipt →</button>
+        </form>
+    </div>
+
+    {# ── NOT FOUND ── #}
+    {% if searched_number and not claims %}
+    <div class="not-found">
+        <div class="not-found-icon">❌</div>
+        <div class="not-found-title">Receipt Not Found</div>
+        <div class="not-found-code">{{ searched_number|upper }}</div>
+        <div class="not-found-sub">No checkout record matches this sales number. Check for typos or contact the outlet.</div>
+    </div>
+    {% endif %}
+
+    {# ── VERIFIED RESULT ── #}
+    {% if claims %}
+
+    <div class="verified-banner">
+        <div class="verified-icon">✅</div>
+        <div>
+            <div class="verified-text-head">Receipt Verified — Found in System</div>
+            <div class="verified-text-sub">{{ claims.count }} Empower gift{% if claims.count > 1 %}s{% endif %} were checked out under this number</div>
+        </div>
+    </div>
+
+    <div class="result-card">
+        <div class="result-header">
+            <div>
+                <div class="result-sales-label">Sales Number</div>
+                <div class="result-sales-num">{{ claims.0.sales_number }}</div>
+            </div>
+            <span class="status-badge status-claimed">✓ CLAIMED</span>
+        </div>
+
+        <div class="result-body">
+            {# ── KEY DETAILS GRID ── #}
+            <div class="result-grid">
+                <div>
+                    <div class="result-field-label">Customer Name</div>
+                    <div class="result-field-value highlight">{{ claims.0.recommender.full_name }}</div>
+                </div>
+                <div>
+                    <div class="result-field-label">Phone Number</div>
+                    <div class="result-field-value">{{ claims.0.recommender.phone_number }}</div>
+                </div>
+                <div>
+                    <div class="result-field-label">Outlet</div>
+                    <div class="result-field-value">{{ claims.0.recommender.outlet }}</div>
+                </div>
+                <div>
+                    <div class="result-field-label">NIN</div>
+                    <div class="result-field-value">{{ claims.0.recommender.nin }}</div>
+                </div>
+                <div>
+                    <div class="result-field-label">Referral Code</div>
+                    <div class="result-field-value highlight">{{ claims.0.recommender.referral_code }}</div>
+                </div>
+                <div>
+                    <div class="result-field-label">Date Claimed</div>
+                    <div class="result-field-value">{{ claims.0.date_claimed|date:"d M Y" }}</div>
+                </div>
+                <div>
+                    <div class="result-field-label">Empowers Checked Out</div>
+                    <div class="result-field-value highlight">{{ claims.count }}</div>
+                </div>
+            </div>
+
+            {# ── INDIVIDUAL CLAIM BREAKDOWN ── #}
+            <div class="breakdown-title">📋 Claim Breakdown</div>
+            <table class="breakdown-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Referred Buyer</th>
+                        <th>Gift Earned On</th>
+                        <th>Claimed On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for claim in claims %}
+                    <tr>
+                        <td>Gift {{ forloop.counter }}</td>
+                        <td>{{ claim.sale.buyer.full_name }}</td>
+                        <td>{{ claim.date_created|date:"d M Y" }}</td>
+                        <td>{{ claim.date_claimed|date:"d M Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            {# ── OPTIONAL: mismatch warning if back office enters a name to cross-check ── #}
+            {% if report_name and report_name|lower != claims.0.recommender.full_name|lower %}
+            <div class="mismatch-box">
+                <div class="mismatch-icon">⚠️</div>
+                <div>
+                    <strong>Name Mismatch:</strong> The report lists
+                    "<strong>{{ report_name }}</strong>" but this receipt belongs to
+                    "<strong>{{ claims.0.recommender.full_name }}</strong>".
+                    Please investigate before approving.
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── CROSS-CHECK NAME (optional field) ── #}
+    <div class="form-card" style="margin-bottom:20px;">
+        <form method="POST" action="{% url 'GREENERGYFORMS:empower_verify' %}">
+            {% csrf_token %}
+            <input type="hidden" name="sales_number" value="{{ claims.0.sales_number }}">
+            <div class="field">
+                <label for="report_name">Cross-check: Name in Report</label>
+                <input type="text" id="report_name" name="report_name"
+                       value="{{ report_name|default:'' }}"
+                       placeholder="Type the name from the outlet report"
+                       style="text-transform:none; letter-spacing:normal;" />
+            </div>
+            <button type="submit" class="btn-verify" style="background: rgba(255,255,255,0.07); color: var(--white); box-shadow:none; border: 1px solid var(--card-border);">
+                ✓ Check Name Match
+            </button>
+        </form>
+    </div>
+
+    {% endif %}
+
+    {# ── VERIFY ANOTHER ── #}
+    {% if claims or searched_number %}
+    <form method="POST" action="{% url 'GREENERGYFORMS:empower_verify' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn-another">🔄 Verify Another Receipt</button>
+    </form>
+    {% endif %}
+</div>
+</body>
+</html>

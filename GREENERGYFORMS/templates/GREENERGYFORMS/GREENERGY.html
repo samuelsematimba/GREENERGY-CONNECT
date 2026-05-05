@@ -1,0 +1,116 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'GREENERGYFORMS/style2.css' % }" type="text/css" rel="stylesheet" />
+    <title>GREENERGY</title>
+</head>
+<body>
+    <nav class="othernames">
+      <li>Home</li>
+      <li>Page</li>
+      <li>Contact us</li>
+    </nav>
+    
+<body>
+    <h1 id="welcome"> welcome greenergy customers </h1>
+    <figure>
+        <img src="images/greenergy.jpg" alt="image that shows customer care" width="300" height="200" />
+        <figcaption>greenergy bio stove combo with fuel</figcaption>
+    </figure>
+        <p>
+            Welcome to the site where you can buy fuel for your stove.<br />i wanted to create a page where people can order for fuel<br /> using a <b>website</b> and any other services the <i>bussiness</i> is offering this can be simple and secure
+        </p>
+        <hr />
+        <p id="info">
+            <b>How this can be done;</b> <br /> We can create this web application bascally using html and more of css, then we shall also use python and java script to completely manage the data base and other code or <i>programming</i> involved. <br
+            />
+            <br /> <q cite="https:samuelsematimba"> Did you know you can earn money from building websites 
+            </q>   
+            <blockquote> 
+            this is an indented block of code 
+            </blockquote>
+         </p>
+<abbr title = "programmer driver"> pd </abbr>
+<br ><acronym title = "high definite multi interface"> HDMI </acronym><br />
+<a href="https://www.w3schools.com/tags/att_a_href.asp" id="more">find more on href here</a>
+</p>
+<p> We are going to work with some lists </P>
+<ol>
+<li> ordered lists or numbered lists we shall always use ol for these lists  </li>
+<li> unordered lists or bullet lists for this one we shall use ul </li>
+<li> definition lists we shall use dl with the dt for the term and dd for the definition </li>
+</ol>
+
+<ul>
+<li>buiding websites and web applications</li>
+<li>programming embedded systems </li>
+<ul> 
+<li> car infortainment systems </li>
+<li> ECU programming</li>
+</ul>
+</ul>
+
+<p><b>Lets try some definitions</b></p>
+<dl>
+<dt> programming </dt>
+<dd> programming is a field where a specific language is used to tell what a computer should do </dd>
+<dd> programming can also be defined as a set of rules a computer can follow to execute some specific tasks </dd>
+
+<dt>HTML</dt>
+<dd>Hyper text markup language</dd>
+
+<dt>python</dt>
+<dd>python is an example of a programming language that uses one of the best user friendly syntax</dd>
+<h1> customer care </h1>
+<img src="images/desk.jpg" alt="customer care center" width="300" height="200" />
+<p>
+we also have a well structured customer care service center
+</p>
+
+</dl>
+<P>
+<!--this is how we are going to write comments in html-->
+<a href="html2/page2.html" id="page_links2">link to page 2</a>
+<br /> <a href="page3.html" id="page_links1">link to page 3</a>
+<br />
+<a href="page3.html" id="page_links3">email to samuel</a>
+<p>
+
+</p>
+<hr />
+
+<h1 id="about"> we shall also learn about tables</h1>
+<table cellpadding= "5" border="2">
+<tr>
+<th scope ="col">S/N</th>
+<th scope ="col">Name</th>
+<th scope ="col">stove number</th>
+</tr>
+<tr>
+<td>1</td>
+<td></td>
+<td>SB000129</td>
+</tr>
+<tr>
+<td>2</td>
+<td>serugo</td>
+<td>SB0009 samuelsematimb</td>
+</table>
+
+<p>
+<a href="{% url 'GREENERGYFORMS:GREENERGY_CUSTOMER_FORMS' %}" id="orderlink">
+    <button type="button" id="you4"> BUY STOVE </button>
+<br />
+</a>
+<a href ="{%url 'GREENERGYFORMS:view_data' %}"> VIEW DATA </a>
+
+</p>
+<a href ="#welcome"name ="btp">Back to top</a>
+<br />
+
+
+</body>
+</html>

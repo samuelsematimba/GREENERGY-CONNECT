@@ -1,0 +1,33 @@
+{% extends "GREENERGYFORMS/generate.html" %}
+{% block context %}
+{% endblock %}
+
+{% block content %}
+    <p style="font-weight: bold; font-size: medium;font-family: monospace"> Generated qr codes </p>
+    <p> total records : SB {{ sema|length }} DB {{ sema2|length }}</p>
+{% endblock %}
+
+{% block text %}
+{% endblock %}
+
+
+{% block qr %}
+<div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:20px;">
+    
+    {% for sem in qr_list %}
+        <div>
+            <img src="data:image/png;base64,{{ sem }}"  width="150">
+            
+        </div>
+    {% endfor %}
+</div>
+<div style="display:grid;grid-template-columns:repeat(4, 1fr); gap:20px;">
+    {% for semta in qr_list2 %}
+        
+        <div>
+            <img src="data:image/png;base64,{{ semta }}"  width="150">
+        
+        </div> 
+    {% endfor %}
+</div>
+{% endblock %}

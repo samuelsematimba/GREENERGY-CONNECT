@@ -1,0 +1,51 @@
+body{
+    background-image: url('./images/clear1.jpg');
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items:center;
+    font-family: sans-serif;
+    color: rgb(88, 88, 85);
+    font-size:10px ;
+    background-color: rgb(247, 249, 251);
+    min-height:100vh;
+    margin:0;
+    background-repeat: no-repeat;
+    background-size: cover;
+    
+}
+
+.form-group{
+    display:flex;
+    flex-direction:column;
+    margin-bottom: 7px;
+}
+input{
+    border-radius: 4px;
+    size: 50%;
+    box-sizing: border-box;
+}
+fieldset{
+    display:flex;
+    align-items: center;
+    gap:30px;
+    width:130%;
+    border-radius:5px;
+    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    background-color: rgb(233, 244, 249);
+    border-style: groove;
+}
+.yes{
+    align-items: center;
+    justify-content: center;
+    width:50%;
+    height:180px
+}
+#btt{
+    border-radius: 5px;
+    background-color: rgb(64, 193, 184);
+}
+.lbl{
+    font-size: 13px;
+}

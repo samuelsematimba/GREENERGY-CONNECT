@@ -1,0 +1,258 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREENERGY — Empower Claims</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --teal: #00B8A9;
+            --ink: #0d1f1e;
+            --white: #ffffff;
+            --muted: rgba(255,255,255,0.5);
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(0,184,169,0.18);
+            --nav-h: 68px;
+        }
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--ink); color: var(--white); min-height: 100vh;
+        }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at 10% 20%, rgba(0,184,169,0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 90% 80%, rgba(0,184,169,0.07) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--nav-h);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(13,31,30,0.85); backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(0,184,169,0.12);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo {
+            width: 34px; height: 34px;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border-radius: 9px; display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--ink);
+        }
+        .nav-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--white); }
+        .nav-title span { color: var(--teal); }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 8px 18px; background: transparent;
+            border: 1px solid rgba(0,184,169,0.3); border-radius: 10px;
+            color: var(--white); font-size: 13px; font-weight: 600;
+            text-decoration: none; font-family: 'Syne', sans-serif;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .btn-back:hover { background: rgba(0,184,169,0.1); border-color: var(--teal); color: var(--teal); }
+
+        .page {
+            position: relative; z-index: 1;
+            padding-top: calc(var(--nav-h) + 48px);
+            padding-bottom: 64px;
+            max-width: 600px; margin: 0 auto;
+            padding-left: 24px; padding-right: 24px;
+            animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(24px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .page-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+        .page-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+
+        .msg { padding: 14px 18px; border-radius: 12px; margin-bottom: 20px; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .msg-success { background: rgba(0,184,169,0.1); border: 1px solid rgba(0,184,169,0.3); color: #7fffd4; }
+        .msg-error { background: rgba(224,82,82,0.1); border: 1px solid rgba(224,82,82,0.3); color: #f8a0a0; }
+        .msg-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: #93c5fd; }
+
+        .form-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 20px; padding: 36px; margin-bottom: 24px;
+        }
+
+        .field { margin-bottom: 22px; }
+        .field label { display: block; font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--teal); margin-bottom: 8px; }
+        .field input {
+            width: 100%; background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,184,169,0.2); border-radius: 12px;
+            padding: 13px 16px; font-size: 15px; color: var(--white);
+            font-family: 'DM Sans', sans-serif; outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            -webkit-text-fill-color: var(--white);
+        }
+        .field input:focus { border-color: var(--teal); background: rgba(0,184,169,0.06); box-shadow: 0 0 0 3px rgba(0,184,169,0.12); }
+        .field input::placeholder { color: rgba(255,255,255,0.2); }
+
+        .btn-search {
+            width: 100%; background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border: none; border-radius: 12px; padding: 14px;
+            font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+            color: var(--ink); cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0,184,169,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-search:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(0,184,169,0.45); }
+
+        /* Customer card */
+        .customer-card {
+            background: rgba(0,184,169,0.08);
+            border: 1px solid rgba(0,184,169,0.3);
+            border-radius: 16px; padding: 24px;
+            margin-bottom: 24px;
+            animation: slideUp 0.5s ease both;
+        }
+        .customer-header {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .customer-name { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+        .pending-badge {
+            background: rgba(0,184,169,0.2); border: 1px solid rgba(0,184,169,0.4);
+            border-radius: 20px; padding: 4px 14px;
+            font-size: 12px; font-weight: 700; color: var(--teal);
+        }
+        .customer-details { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .detail-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 3px; }
+        .detail-value { font-size: 15px; font-weight: 500; color: var(--white); }
+
+        /* Claims */
+        .claims-title {
+            font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700;
+            color: var(--white); margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .claim-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 22px; margin-bottom: 14px;
+            animation: slideUp 0.5s ease both;
+        }
+        .claim-card:nth-child(2) { animation-delay: 0.05s; }
+        .claim-card:nth-child(3) { animation-delay: 0.1s; }
+        .claim-top {
+            display: flex; align-items: center; justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .claim-num { font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700; color: var(--teal); }
+        .claim-date { font-size: 13px; color: var(--muted); }
+        .claim-buyer { font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 14px; }
+        .claim-buyer strong { color: var(--white); }
+
+        .btn-claim {
+            width: 100%; padding: 12px;
+            background: linear-gradient(135deg, #f59e0b, #f97316);
+            border: none; border-radius: 10px;
+            font-family: 'Syne', sans-serif; font-size: 14px; font-weight: 700;
+            color: var(--white); cursor: pointer;
+            box-shadow: 0 6px 20px rgba(249,115,22,0.3);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .btn-claim:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(249,115,22,0.4); }
+
+        .no-claims {
+            text-align: center; padding: 32px;
+            color: var(--muted); font-size: 15px;
+        }
+
+        @media (max-width: 600px) {
+            nav { padding: 0 20px; }
+            .form-card { padding: 24px 20px; }
+            .customer-details { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'GREENERGYFORMS:index' %}" class="nav-brand">
+            <div class="nav-logo">
+                <img src="{% static 'GREENERGYFORMS/GREENERGY.png' %}" alt="logo" style="width:45px; height:36px;">
+            </div>
+            <span class="nav-title">GREEN<span>ERGY</span></span>
+        </a>
+        <a href="{% url 'GREENERGYFORMS:index' %}" class="btn-back">← Back to Home</a>
+    </nav>
+
+    <div class="page">
+        <p class="page-label">Empower Programme</p>
+        <h1 class="page-title">Check Claims</h1>
+        <p class="page-sub">Search a customer by phone number to view and process their pending Empower gifts.</p>
+
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="msg msg-error">❌ {{ message }}</div>
+                {% elif message.tags == 'info' %}
+                    <div class="msg msg-info">ℹ️ {{ message }}</div>
+                {% else %}
+                    <div class="msg msg-success">✅ {{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <div class="form-card">
+            <form method="POST" action="{% url 'GREENERGYFORMS:empower_claim' %}">
+                {% csrf_token %}
+                <div class="field">
+                    <label for="phone_number">Customer Phone Number</label>
+                    <input type="tel" id="phone_number" name="phone_number"
+                           placeholder="Enter phone number to search" required />
+                </div>
+                <button type="submit" name="lookup" class="btn-search">Search Customer →</button>
+            </form>
+        </div>
+
+        {% if customer %}
+        <div class="customer-card">
+            <div class="customer-header">
+                <span class="customer-name">{{ customer.full_name }}</span>
+                <span class="pending-badge">{{ pending_claims.count }} Pending</span>
+            </div>
+            <div class="customer-details">
+                <div class="detail-item">
+                    <div class="detail-label">Phone</div>
+                    <div class="detail-value">{{ customer.phone_number }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">NIN</div>
+                    <div class="detail-value">{{ customer.nin }}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Referral Code</div>
+                    <div class="detail-value" style="color: var(--teal); font-weight: 700;">{{ customer.referral_code }}</div>
+                </div>
+            </div>
+        </div>
+
+        {% if pending_claims %}
+        <div class="claims-title">🎁 Pending Empower Gifts</div>
+        {% for claim in pending_claims %}
+        <div class="claim-card">
+            <div class="claim-top">
+                <span class="claim-num">Gift #{{ forloop.counter }}</span>
+                <span class="claim-date">{{ claim.date_created|date:"d M Y" }}</span>
+            </div>
+            <div class="claim-buyer">Referred buyer: <strong>{{ claim.sale.buyer.full_name }}</strong></div>
+            <form method="POST" action="{% url 'GREENERGYFORMS:empower_claim' %}">
+                {% csrf_token %}
+                <input type="hidden" name="claim_id" value="{{ claim.id }}">
+                <button type="submit" class="btn-claim">🎁 Mark as Claimed</button>
+            </form>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="no-claims">✅ No pending Empower gifts for this customer.</div>
+        {% endif %}
+        {% endif %}
+    </div>
+</body>
+</html>

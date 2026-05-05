@@ -1,0 +1,127 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'GREENERGYFORMS/style9.css' %}" type="text/css" rel="stylesheet">
+    <title>GREENERGY_CUSTOMER_FORMS</title>
+</head>
+<body>
+    <nav class= "navi">
+       <li> <a href='{%url "GREENERGYFORMS:index" %}'> Home </a></li>
+       <li> <a href='{%url "GREENERGYFORMS:GREENERGY_CUSTOMER_FORMS" %}'> Form </a></li>
+       <li> <a href='{%url "GREENERGYFORMS:view_data" %}'> Data-view </a></li>
+    </nav>
+    <div class ="form-wrapper">
+        <form action="{% url 'GREENERGYFORMS:save' %}" enctype="multipart/form-data" method="POST">
+            {% csrf_token %}
+            <header>
+                <h2 style="color:rgb(61, 182, 209)"> EMPOWER YOUR COMMUNITY: EXPRESSION OF INTEREST FORM </h2>
+                <div class="header-box" style="display:flex;justify-content:space-between;align-items:center; width:103%">
+                    <img src="{% static 'GREENERGYFORMS/bukona.png' %}" alt="bukonalogo" style="height:60px;width:120px;">
+                    <img src="{% static 'GREENERGYFORMS/gn.png' %}" alt="greenergylogo" style="height:60px;width:120px;">
+                </div>
+            </header>
+            <fieldset class="customer_det">
+                <legend>
+                    <h3 style="color:rgb(61, 182, 209)">Recommender Details:</h3>
+                </legend>
+                <div class="column">
+                    <div class="form-group">  
+                        <label id="gn" for="cd">GIVEN NAME</label>
+                        <input class= "clm2" type="text" name="customer_name"  />
+                    </div>
+                    <div class="form-group">
+                        <label id="sn" for="sd">SURNAME</label>
+                        <input class="clm" type="text" name="surname"  />
+                    </div>
+                    <div class="form-group">
+                        <label id="ad" for="nin">NIN</label>
+                        <input class="clm2" type="text" name="ninnumber"  />
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="form-group">
+                        <label for="loc">LOCATION</label>
+                        <input class="clm" type="text" name="location2" />
+                    </div>
+                    <div class="form-group">
+                        <label for="phn" name ="phonenumber">PHONE NUMBER</label>
+                        <input class="clm2" type="tel" name="phonenumber" />
+                    </div>
+                    <div class="form-group">
+                        <label for="gen" name="gender">GENDER</label>
+                        <select class="clm" name ="gender" size="1"> 
+                            <option value="none">select</option>
+                            <option value="male">Male</option>
+                            <option value="female">Female</option>
+                        </select>
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>
+                    <h3 style="color:rgb(61, 182, 209)">New Buyer's Details: </h3>
+                </legend>
+                <div class="column">
+                    <div class="form-group">
+                        <label for="gen" name ="buyer">NAME</label>
+                        <input class= "clm2" type="text" name="customer_name"  />
+                    </div>
+                    <div class="form-group">
+                        <label for="sn" name="buyersurname">NIN</label>
+                        <input class= "clm2" type="text" name="buyersurname"  />
+                    </div>
+                    <div class="form-group">
+                        <label for="serial">SERIAL NUMBER</label>
+                        <input type="text" name="serialnumber" size="24"/>
+                    </div>
+                </div>
+                <div class="column">
+                    <div class="form-group">
+                        <label for="cnt">PHONE NUMBER</label>
+                        <input type="tel" name="contact" size="15"/>
+                    </div>
+                    <div class="form-group">
+                        <label for="oths">PRIOR COOKING METHOD </label>
+                        <select id="oths" name="others">
+                            <option value="none">select</option>
+                            <option value="charcoal">Charcoal</option>
+                            <option value="fire wood">Fire Wood</option>
+                            <option value="electricity or Gas">Electricity or Gas</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="image" name="img">NATIONAL ID PHOTO</label>
+                        <input id="image" type="file" name="nationalid" size="20" />
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>
+                    <h3 style="color:rgb(61, 182, 209)">Attachment Details:</h3>
+                </legend>
+                <div class="column">
+                    <div class="form-group">
+                        <label for="attachment">SIGNATURE</label>
+                        <input id="attachment" type="file" name="signature" size="20" />
+                    </div>
+                </div>
+            </fieldset>
+            <h3 class="note" style="text-align: center; justify-content: center;">
+                PLEASE NOTE: By submitting this form, you or the Customer are expressing your interest in being Awarded Empower Green Fuel and agreeing to be contacted by our team for further information and assistance.
+            </h3>
+            <button id="btt" type="submit" style=
+                "background-color: rgb(15, 216, 55);
+                height:20px;
+                border-radius:4px;
+                justify-content:center;
+                font-family: sans-serif;
+                display:flex;
+                width:350px">SUBMIT FORM
+            </button>
+        </form>
+    </div>
+</body>
+</html>

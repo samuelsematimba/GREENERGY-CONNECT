@@ -1,0 +1,1150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREENERGY — Empower Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'GREENERGYFORMS/favicon.png' %}">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --teal: #00B8A9;
+            --teal-dark: #008f84;
+            --teal-glow: rgba(0,184,169,0.35);
+            --ink: #0d1f1e;
+            --ink2: #112322;
+            --white: #ffffff;
+            --muted: rgba(255,255,255,0.55);
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(0,184,169,0.18);
+            --nav-h: 68px;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--ink);
+            color: var(--white);
+            min-height: 100vh;
+        }
+
+        /* ─── NAVBAR ─── */
+        nav.topnav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--nav-h);
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px;
+            background: rgba(13,31,30,0.75);
+            backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(0,184,169,0.12);
+            transition: background 0.3s;
+        }
+
+        nav.topnav.scrolled {
+            background: rgba(13,31,30,0.95);
+        }
+
+        .nav-brand {
+            display: flex; align-items: center; gap: 10px;
+            text-decoration: none;
+        }
+
+        .nav-logo-box {
+            width: 36px; height: 36px;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border-radius: 9px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif; font-weight: 700; font-size: 17px;
+            color: var(--ink);
+        }
+
+        .nav-brand-text {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 19px;
+            color: var(--white); letter-spacing: 1.5px;
+        }
+
+        .nav-brand-text span { color: var(--teal); }
+
+        .nav-links {
+            display: flex; align-items: center; gap: 6px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            display: block;
+            padding: 7px 16px;
+            font-size: 14px; font-weight: 500;
+            color: var(--muted);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: color 0.2s, background 0.2s;
+        }
+
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--white);
+            background: rgba(0,184,169,0.1);
+        }
+
+        .nav-links a.active { color: var(--teal); }
+
+        /* hamburger */
+        .burger {
+            display: none; flex-direction: column; gap: 5px;
+            background: none; border: none; cursor: pointer; padding: 4px;
+        }
+        .burger span {
+            display: block; width: 24px; height: 2px;
+            background: var(--white); border-radius: 2px;
+            transition: 0.3s;
+        }
+
+        .mobile-menu {
+            display: none;
+            position: fixed; top: var(--nav-h); left: 0; right: 0;
+            background: rgba(13,31,30,0.97);
+            border-bottom: 1px solid var(--card-border);
+            padding: 16px 24px 24px;
+            z-index: 99;
+        }
+
+        .mobile-menu.open { display: block; }
+
+        .mobile-menu a {
+            display: block; padding: 13px 0;
+            font-size: 16px; font-weight: 500; color: var(--muted);
+            text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: color 0.2s;
+        }
+        .mobile-menu a:hover { color: var(--teal); }
+        .mobile-menu a:last-child { border-bottom: none; }
+
+        /* ─── HERO ─── */
+        #home {
+            position: relative;
+            min-height: 100vh;
+            display: flex; align-items:start;
+            overflow: hidden;
+        }
+
+        .hero-bg {
+            position: absolute; inset: 0;
+            background-image: url("{% static 'GREENERGYFORMS/empower_hero.jpg' %}");
+            background-size: cover;
+            background-position: center 30%;
+            background-repeat: no-repeat;
+        }
+
+        /* overlay so text is always readable */
+        .hero-bg::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(
+                110deg,
+                rgba(13,31,30,0.92) 0%,
+                rgba(13,31,30,0.70) 50%,
+                rgba(13,31,30,0.35) 100%
+            );
+        }
+
+        /* fallback animated bg when no image */
+        .hero-bg-fallback {
+            position: absolute; inset: 0;
+            background:
+                radial-gradient(ellipse at 15% 60%, rgba(0,184,169,0.25) 0%, transparent 55%),
+                radial-gradient(ellipse at 85% 30%, rgba(0,230,180,0.12) 0%, transparent 50%),
+                linear-gradient(135deg, #0d1f1e 0%, #0a2a27 100%);
+        }
+        .page-section.active {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+       }
+
+        /* dot grid */
+        .hero-bg-fallback::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image: radial-gradient(circle, rgba(0,184,169,0.07) 1px, transparent 1px);
+            background-size: 36px 36px;
+        }
+
+        .hero-content {
+            position: relative; z-index: 2;
+            max-width: 1200px; margin: 0 auto;
+            padding: 0 40px;
+            padding-top: var(--nav-h);
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(0,184,169,0.12);
+            border: 1px solid rgba(0,184,169,0.3);
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 12px; font-weight: 600; letter-spacing: 1px;
+            color: var(--teal); text-transform: uppercase;
+            margin-bottom: 24px;
+            animation: fadeIn 0.8s ease both;
+        }
+
+        .hero-badge::before { content: '◆'; font-size: 7px; }
+
+        .hero-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(38px, 6vw, 72px);
+            font-weight: 700; line-height: 1.05;
+            color: var(--white);
+            margin-bottom: 20px;
+            animation: fadeIn 0.8s 0.1s ease both;
+        }
+
+        .hero-title .accent { color: var(--teal); }
+
+        .hero-sub {
+            font-size: clamp(15px, 2vw, 18px);
+            color: rgba(255,255,255,0.65);
+            max-width: 520px; line-height: 1.7;
+            margin-bottom: 40px;
+            animation: fadeIn 0.8s 0.2s ease both;
+        }
+
+        .hero-ctas {
+            display: flex; flex-wrap: wrap; gap: 14px;
+            animation: fadeIn 0.8s 0.3s ease both;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .page-content {
+            animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+
+        /* ─── SHARED SECTION ─── */
+        section {
+            padding: 96px 40px;
+            max-width: 1200px; margin: 0 auto;
+        }
+
+        .section-label {
+            font-size: 11px; font-weight: 600; letter-spacing: 2px;
+            text-transform: uppercase; color: var(--teal);
+            margin-bottom: 12px;
+        }
+
+        .section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(28px, 4vw, 44px);
+            font-weight: 700; color: var(--white);
+            margin-bottom: 14px; line-height: 1.15;
+        }
+
+        .section-desc {
+            color: var(--muted); font-size: 16px; line-height: 1.7;
+            max-width: 560px; margin-bottom: 48px;
+        }
+
+        /* ─── DASHBOARD / QUICK ACTIONS ─── */
+        #dashboard { scroll-margin-top: var(--nav-h); }
+
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 20px;
+        }
+
+        .action-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 0;
+            text-decoration: none;
+            display: flex; flex-direction: column;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            position: relative; overflow: hidden;
+        }
+        .card-img {
+            width: 100%;
+            height: 220px;
+            overflow: hidden;
+        }
+
+        .action-card::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(0,184,169,0.06), transparent);
+            opacity: 0; transition: opacity 0.3s;
+        }
+        .card-img img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+            transition: transform 0.4s ease;
+        }
+
+        .action-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0,184,169,0.45);
+            background: rgba(0,184,169,0.06);
+            box-shadow: 0 16px 48px rgba(0,0,0,0.4), 0 0 0 1px rgba(0,184,169,0.15);
+        }
+
+        .action-card:hover .card-img img { transform: scale(1.05); }
+        .card-body {
+            padding: 20px 22px;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .card-icon {
+            width: 48px; height: 48px;
+            background: rgba(0,184,169,0.12);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 22px;
+        }
+
+        .card-title-text {
+            font-family: 'Syne', sans-serif;
+            font-size: 16px; font-weight: 700;
+            color: var(--white);
+        }
+
+        .card-desc {
+            font-size: 13px; color: var(--muted); line-height: 1.5;
+        }
+
+        .card-arrow {
+            font-size: 18px; color: var(--teal);
+            transition: transform 0.2s;
+        }
+
+        .action-card:hover .card-arrow { transform: translateX(4px); }
+
+        /* ─── ABOUT SECTION ─── */
+        #about {
+            scroll-margin-top: var(--nav-h);
+            background:
+                radial-gradient(ellipse at 80% 50%, rgba(0,184,169,0.07) 0%, transparent 60%);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 64px; align-items: center;
+        }
+
+        .about-img-wrap {
+            position: relative; border-radius: 20px; overflow: hidden;
+        }
+
+        .about-img-wrap img {
+            width: 100%; height: 380px; object-fit: cover; border-radius: 20px;
+            display: block;
+        }
+
+        .about-img-wrap::after {
+            content: '';
+            position: absolute; inset: 0;
+            border: 1px solid rgba(0,184,169,0.2);
+            border-radius: 20px;
+            pointer-events: none;
+        }
+
+        .about-img-placeholder {
+            width: 100%; height: 380px;
+            background: linear-gradient(135deg, rgba(0,184,169,0.15), rgba(0,184,169,0.05));
+            border-radius: 20px;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid var(--card-border);
+            font-size: 80px;
+        }
+
+        .about-stats {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 20px; margin-top: 32px;
+        }
+
+        .stat-box {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .stat-num {
+            font-family: 'Syne', sans-serif;
+            font-size: 30px; font-weight: 700;
+            color: var(--teal);
+        }
+
+        .stat-label {
+            font-size: 13px; color: var(--muted); margin-top: 4px;
+        }
+
+        /* ─── PRODUCTS SECTION ─── */
+        #products { scroll-margin-top: var(--nav-h); }
+
+        .product-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            padding: 32px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(0,184,169,0.4);
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .product-icon { font-size: 36px; margin-bottom: 16px; }
+
+        .product-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 18px; font-weight: 700;
+            color: var(--white); margin-bottom: 8px;
+        }
+
+        .product-text { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 26px;
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 14px; font-weight: 700; letter-spacing: 0.5px;
+            text-decoration: none; border: none; cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+        }
+
+        .btn:hover { transform: translateY(-2px); filter: brightness(1.08); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--teal) 0%, #00e5d4 100%);
+            color: var(--ink);
+            box-shadow: 0 8px 24px rgba(0,184,169,0.35);
+        }
+
+        .btn-primary:hover { box-shadow: 0 12px 32px rgba(0,184,169,0.5); }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid rgba(0,184,169,0.35);
+            color: var(--white);
+        }
+
+        .btn-outline:hover { background: rgba(0,184,169,0.08); border-color: var(--teal); }
+
+        /* ─── FOOTER ─── */
+        footer {
+            border-top: 1px solid rgba(255,255,255,0.06);
+            padding: 40px 40px;
+            max-width: 1200px; margin: 0 auto;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 16px;
+        }
+
+        .footer-brand {
+            font-family: 'Syne', sans-serif;
+            font-size: 15px; font-weight: 700; color: var(--white);
+        }
+        .footer-brand span { color: var(--teal); }
+
+        .footer-text { font-size: 13px; color: rgba(255,255,255,0.3); }
+
+        /* ─── DIVIDER ─── */
+        .full-divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(0,184,169,0.2), transparent);
+            margin: 0;
+        }
+
+        /* ─── SECTION VISIBILITY ─── */
+        .page-section { display: none; }
+
+        /* ─── STAGGERED FADE-IN (same as hero) ─── */
+        /* Section label — appears first */
+        .page-section .section-label { opacity: 0; }
+        .page-section.run .section-label {
+            animation: fadeIn 0.8s 0s ease both;
+        }
+        /* Section title — second */
+        .page-section .section-title { opacity: 0; }
+        .page-section.run .section-title {
+            animation: fadeIn 0.8s 0.1s ease both;
+        }
+        /* Section desc — third */
+        .page-section .section-desc { opacity: 0; }
+        .page-section.run .section-desc {
+            animation: fadeIn 0.8s 0.2s ease both;
+        }
+        /* Grids — fourth */
+        .page-section .actions-grid,
+        .page-section .products-grid { opacity: 0; }
+        .page-section.run .actions-grid,
+        .page-section.run .products-grid {
+            animation: fadeIn 0.8s 0.3s ease both;
+        }
+        /* Each card staggers */
+        .page-section.run .action-card { opacity: 0; }
+        .page-section.run .action-card:nth-child(1) { animation: fadeIn 0.8s 0.35s ease both; }
+        .page-section.run .action-card:nth-child(2) { animation: fadeIn 0.8s 0.42s ease both; }
+        .page-section.run .action-card:nth-child(3) { animation: fadeIn 0.8s 0.49s ease both; }
+        .page-section.run .action-card:nth-child(4) { animation: fadeIn 0.8s 0.56s ease both; }
+        .page-section.run .action-card:nth-child(5) { animation: fadeIn 0.8s 0.63s ease both; }
+        .page-section.run .action-card:nth-child(6) { animation: fadeIn 0.8s 0.70s ease both; }
+        .page-section.run .action-card:nth-child(7) { animation: fadeIn 0.8s 0.70s ease both; }
+        /* About grid pieces */
+        .page-section .about-grid > div:first-child { opacity: 0; }
+        .page-section.run .about-grid > div:first-child {
+            animation: fadeIn 0.8s 0.1s ease both;
+        }
+        .page-section .about-grid > div:last-child { opacity: 0; }
+        .page-section.run .about-grid > div:last-child {
+            animation: fadeIn 0.8s 0.3s ease both;
+        }
+        /* Stat boxes */
+        .page-section.run .stat-box:nth-child(1) { animation: fadeIn 0.8s 0.35s ease both; }
+        .page-section.run .stat-box:nth-child(2) { animation: fadeIn 0.8s 0.45s ease both; }
+        .page-section.run .stat-box:nth-child(3) { animation: fadeIn 0.8s 0.55s ease both; }
+        .page-section.run .stat-box:nth-child(4) { animation: fadeIn 0.8s 0.65s ease both; }
+        /* Footer */
+        footer.page-section.run {
+            animation: fadeIn 0.8s 0.2s ease both;
+        }
+
+        /* ─── PROFILE DROPDOWN ─── */
+        .profile-wrap {
+            position: relative;
+        }
+
+        .profile-btn {
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,184,169,0.2);
+            border-radius: 40px;
+            padding: 5px 14px 5px 5px;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+        }
+
+        .profile-btn:hover {
+            background: rgba(0,184,169,0.1);
+            border-color: rgba(0,184,169,0.45);
+        }
+
+        .profile-avatar {
+            width: 34px; height: 34px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 14px;
+            color: var(--ink);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .profile-avatar img {
+            width: 100%; height: 100%;
+            object-fit: cover; border-radius: 50%;
+        }
+
+        .profile-name {
+            font-size: 13px; font-weight: 600;
+            color: var(--white);
+            max-width: 100px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .profile-chevron {
+            font-size: 10px; color: var(--muted);
+            transition: transform 0.2s;
+        }
+
+        .profile-wrap.open .profile-chevron {
+            transform: rotate(180deg);
+        }
+
+        /* dropdown panel */
+        .profile-dropdown {
+            position: absolute; top: calc(100% + 10px); right: 0;
+            width: 240px;
+            background: #112a28;
+            border: 1px solid rgba(0,184,169,0.2);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+            display: none;
+            animation: fadeIn 0.25s ease both;
+            z-index: 200;
+        }
+
+        .profile-wrap.open .profile-dropdown {
+            display: block;
+        }
+
+        /* top section of dropdown */
+        .dropdown-top {
+            padding: 20px;
+            display: flex; align-items: center; gap: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .dropdown-avatar {
+            width: 48px; height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 18px;
+            color: var(--ink);
+            overflow: hidden;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .dropdown-avatar img {
+            width: 100%; height: 100%;
+            object-fit: cover; border-radius: 50%;
+        }
+
+        /* camera icon overlay for uploading */
+        .avatar-upload-label {
+            position: absolute; inset: 0;
+            background: rgba(0,0,0,0.45);
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 50%;
+            font-size: 14px;
+            opacity: 0;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .dropdown-avatar:hover .avatar-upload-label {
+            opacity: 1;
+        }
+
+        .avatar-upload-input { display: none; }
+
+        .dropdown-info { overflow: hidden; }
+
+        .dropdown-fullname {
+            font-family: 'Syne', sans-serif;
+            font-size: 14px; font-weight: 700;
+            color: var(--white);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+
+        .dropdown-username {
+            font-size: 12px; color: var(--muted);
+            margin-top: 2px;
+        }
+
+        /* dropdown menu items */
+        .dropdown-menu { padding: 8px 0; }
+
+        .dropdown-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 11px 20px;
+            font-size: 14px; color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.15s, color 0.15s;
+            border: none; background: none; width: 100%;
+            text-align: left; font-family: 'DM Sans', sans-serif;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(0,184,169,0.08);
+            color: var(--white);
+        }
+
+        .dropdown-item .item-icon {
+            width: 30px; height: 30px;
+            background: rgba(0,184,169,0.1);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; flex-shrink: 0;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: rgba(255,255,255,0.06);
+            margin: 4px 0;
+        }
+
+        .dropdown-item.logout {
+            color: #f87171;
+        }
+
+        .dropdown-item.logout:hover {
+            background: rgba(248,113,113,0.08);
+        }
+
+        .dropdown-item.logout .item-icon {
+            background: rgba(248,113,113,0.1);
+        }
+
+        /* ─── RESPONSIVE ─── */
+        @media (max-width: 768px) {
+            nav.topnav { padding: 0 20px; }
+            .nav-links { display: none; }
+            .burger { display: flex; }
+
+            .hero-content { padding: 0 20px; padding-top: calc(var(--nav-h) + 20px); }
+            .hero-title { font-size: 36px; }
+
+            section { padding: 64px 20px; }
+
+            .about-grid { grid-template-columns: 1fr; gap: 32px; }
+            .about-img-placeholder { height: 260px; }
+
+            footer { padding: 32px 20px; flex-direction: column; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ─── NAVBAR ─── -->
+    <nav class="topnav" id="topnav">
+        <a href="#home" class="nav-brand">
+            <div class="nav-logo-box">
+                <img src="{% static 'GREENERGYFORMS/GREENERGY.png' %}" alt="logo" style="width:45px; height:36px;">
+            </div>
+            <span class="nav-brand-text">GREEN<span>ERGY</span></span>
+        </a>
+
+        <ul class="nav-links">
+            <li><a href="#" onclick="showSection('home')" class="active">Home</a></li>
+            <li><a href="#" onclick="showSection('dashboard')">Dashboard</a></li>
+            <li><a href="#" onclick="showSection('about')">About Us</a></li>
+            <li><a href="#" onclick="showSection('products')">Products</a></li>
+            <li>
+                <a href="{% url 'GREENERGYFORMS:view_data' %}" class="btn btn-outline" style="padding:8px 18px;font-size:13px;">
+                    Data View
+                </a>
+            </li>
+        </ul>
+
+        <!-- ─── PROFILE DROPDOWN ─── -->
+        <div class="profile-wrap" id="profileWrap">
+            <button class="profile-btn" onclick="toggleProfile()" aria-label="Profile menu">
+                <div class="profile-avatar" id="navAvatar">
+                    {% if request.user.profile.avatar %}
+                        <img src="{{ request.user.profile.avatar.url }}" alt="avatar" id="navAvatarImg" />
+                    {% else %}
+                        <span id="navAvatarInitial">{{ request.user.username|first|upper }}</span>
+                    {% endif %}
+                </div>
+                <span class="profile-name">{{ request.user.get_full_name|default:request.user.username }}</span>
+                <span class="profile-chevron">▼</span>
+            </button>
+
+            <div class="profile-dropdown" id="profileDropdown">
+                <!-- User info top -->
+                <div class="dropdown-top">
+                    <div class="dropdown-avatar" id="dropAvatar">
+                        {% if request.user.profile.avatar %}
+                            <img src="{{ request.user.profile.avatar.url }}" alt="avatar" id="dropAvatarImg" />
+                        {% else %}
+                            <span id="dropAvatarInitial">{{ request.user.username|first|upper }}</span>
+                        {% endif %}
+                        <label class="avatar-upload-label" for="avatarInput" title="Change photo">📷</label>
+                        <input type="file" id="avatarInput" class="avatar-upload-input" accept="image/*" onchange="previewAvatar(event)" />
+                    </div>
+                    <div class="dropdown-info">
+                        <div class="dropdown-fullname">{{ request.user.get_full_name|default:request.user.username }}</div>
+                        <div class="dropdown-username">@{{ request.user.username }}</div>
+                    </div>
+                </div>
+
+                <!-- Menu items -->
+                <div class="dropdown-menu">
+                    {% if request.user.is_superuser %}
+                    <a href="{% url 'GREENERGYFORMS:view_data' %}" class="dropdown-item">
+                        <span class="item-icon">
+                            <img src="{% static 'GREENERGYFORMS/dataview2.png' %}" alt="Data View" style="width:35px; height:25px;" />
+                        </span> Data View
+                    </a>
+                    {% endif %}
+                    <div class="dropdown-divider"></div>
+                    <a href="{% url 'users:change_password' %}" class="dropdown-item">
+                        <span class="item-icon">
+                            <img src="{% static 'GREENERGYFORMS/change.png' %}" alt="Change Password" style="width:35px; height:25px;" />
+                        </span> Change Password
+                    </a>
+                    <div class="dropdown-divider"></div>
+                    <form method ="POST" action="{% url 'users:logout' %}" style="margin:0;">
+                        {% csrf_token %}
+                        <button type="submit" class="dropdown-item logout">
+                           <span class="item-icon">
+                                <img src="{% static 'GREENERGYFORMS/logout.png' %}" alt="Logout" style="width: 35px; height: 25px;" />
+                           </span> Logout
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <button class="burger" id="burger" aria-label="Menu">
+            <span></span><span></span><span></span>
+        </button>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#" onclick="showSection('home'); closeMenu()">Home</a>
+        <a href="#" onclick="showSection('dashboard'); closeMenu()">Dashboard</a>
+        <a href="#" onclick="showSection('about'); closeMenu()">About Us</a>
+        <a href="#" onclick="showSection('products'); closeMenu()">Products</a>
+        <a href="{% url 'GREENERGYFORMS:view_data' %}" onclick="closeMenu()">Data View</a>
+    </div>
+
+    <!-- ─── HERO ─── -->
+    <section id="home" style="padding:0; max-width:100%;">
+        <!-- Try to load the uploaded image; fallback gradient shown if missing -->
+         {% static "GREENERGYFORMS/empower_hero.jpg" as hero_img %}
+
+        <div class="hero-bg" style="background-image: url('{{ hero_img }}');">
+        </div>
+        <div class="hero-bg-fallback"></div>
+
+        <div class="hero-content">
+            <div class="hero-badge">Empower Your Community</div>
+
+            <h1 class="hero-title">
+                Clean Energy.<br>
+                <span class="accent">Fuel Rewards.</span>
+            </h1>
+
+            <p class="hero-sub">
+                Earn free fuel or cash by recommending Greenergy to your community.
+                Join thousands of climate champions across Uganda.
+            </p>
+
+            <div class="hero-ctas">
+                <button onclick="showSection('dashboard')" class="btn btn-primary">Get Started ↓</button>
+                <button onclick="showSection('about')" class="btn btn-outline">Learn More</button>
+            </div>
+        </div>
+    </section>
+
+    <div class="full-divider"></div>
+
+    <!-- ─── DASHBOARD / QUICK ACTIONS ─── -->
+    <div id="dashboard" class="page-section" style="background: linear-gradient(180deg, rgba(0,184,169,0.03) 0%, transparent 100%); scroll-margin-top: var(--nav-h);">
+    <section style="max-width:1200px;">
+        <p class="section-label">Quick Actions</p>
+        <h2 class="section-title">What would you like to do?</h2>
+        <p class="section-desc">Access all your Greenergy tools from one place — orders, registrations, claims, and more.</p>
+
+        <div class="actions-grid">
+            {% if request.user.is_superuser %}
+            <a href="{% url 'GREENERGYFORMS:GREENERGY_CUSTOMER_FORMS' %}" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/stove.jpg' %}" alt="buy a stove" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text">Buy a Stove</div>
+                    <div class="card-desc">Order a clean cooking stove for your home or community.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+            {% endif %}
+            {% if request.user.is_superuser %}
+            <a href="{% url 'GREENERGYFORMS:qr_codes' %}" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/qrcode.png' %}" alt="Generate QR Codes" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text">Generate QR Codes</div>
+                    <div class="card-desc">Create referral QR codes to share with your network.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'GREENERGYFORMS:empower' %}" class="action-card">
+                <div class="card-img">
+                    <img src ="{% static 'GREENERGYFORMS/empower.jpg' %}" alt="Empower" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text">Empower</div>
+                    <div class="card-desc">Manage your empower programme and track referrals.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+
+            <a href="{% url 'GREENERGYFORMS:empower_register' %}" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/add new.avif' %}" alt="Register Customer" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text">Register Customer</div>
+                    <div class="card-desc">Add a new customer to the Greenergy platform.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+
+            <a href="{% url 'GREENERGYFORMS:empower_claim' %}" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/CLAIMS.png' %}" alt="Claim Rewards" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text">Claims</div>
+                    <div class="card-desc">Submit or review reward claims for referrals.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+            {% if request.user.is_superuser %}
+            <a href="{% url 'GREENERGYFORMS:empower_records' %}" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/customers.png' %}" alt="Customer Records" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text">All Customers</div>
+                    <div class="card-desc">Browse the full customer database and records.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+            {% endif %}
+            <a href="{% url 'GREENERGYFORMS:empower_verify' %}" class="action-card">
+                <div class="card-img">
+                    <img src ="{% static 'GREENERGYFORMS/verify.avif' %}" alt="Empower" />
+                </div>
+                <div class ="card-body">
+                    <div class="card-title-text"> verification </div>
+                    <div class="card-desc">Verify your empower programme and track referrals.</div>
+                </div>
+                <div class="card-arrow">View →</div>
+            </a>
+
+        </div>
+    </section>
+    </div>
+
+    <div class="full-divider"></div>
+
+    <!-- ─── ABOUT ─── -->
+    <div id="about" class="page-section" style="scroll-margin-top: var(--nav-h);">
+    <section style="max-width:1200px;">
+        <div class="about-grid">
+            <div>
+                <p class="section-label">About Us</p>
+                <h2 class="section-title">Powering Communities with Clean Energy</h2>
+                <p class="section-desc">
+                    Greenergy Climate Solutions partners with Bukona Agro to deliver affordable, clean cooking fuel to communities across Nigeria. Our Empower programme rewards community champions who spread the word.
+                </p>
+                <div class="about-stats">
+                    <div class="stat-box">
+                        <div class="stat-num">5K+</div>
+                        <div class="stat-label">Customers Served</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num">12+</div>
+                        <div class="stat-label">Communities Reached</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num">₦M+</div>
+                        <div class="stat-label">Rewards Paid Out</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-num">100%</div>
+                        <div class="stat-label">Clean Fuel</div>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <!-- Uses the uploaded image as the about section visual -->
+                <div class="about-img-wrap">
+                    <img src="{% static 'GREENERGYFORMS/COMMUNITY.jpeg' %}"
+                         alt="Empower Community"
+                         onerror="this.parentElement.innerHTML='<div class=\'about-img-placeholder\'>🌿</div>'"
+                    />
+                </div>
+            </div>
+        </div>
+    </section>
+    </div>
+
+    <div class="full-divider"></div>
+
+    <!-- ─── PRODUCTS ─── -->
+    <div id="products" class="page-section" style="scroll-margin-top: var(--nav-h);">
+    <section style="max-width:1200px;">
+        <p class="section-label">Products</p>
+        <h2 class="section-title">What We Offer</h2>
+        <p class="section-desc">Affordable, clean energy solutions designed for everyday Nigerian households.</p>
+
+        <div class="products-grid">
+            <a href="#" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/STARTER PACK.jpeg' %}" alt="Clean Cook Stove" />
+                </div>
+                <div class="card-body">
+                    <div class="card-title-text">Clean Cook Stove</div>
+                    <div class="card-desc">High-efficiency pellet stoves that cut fuel costs and reduce indoor air pollution for families.</div>
+                    <div class="card-arrow">Learn More →</div>
+                </div>
+            </a>
+            <a href="#" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/biofuel.jpg' %}" alt="Biomass Pellets" />
+                </div>
+                <div class="card-body">
+                    <div class="card-title-text">Bio-fuel</div>
+                    <div class="card-desc">Sustainably sourced fuel from cassave and maize — a cleaner, cheaper alternative to charcoal and firewood.</div>
+                    <div class="card-arrow">Learn More →</div>
+                </div>
+            </a>
+            <a href="{% url 'GREENERGYFORMS:empower' %}" class="action-card">
+                <div class="card-img">
+                    <img src="{% static 'GREENERGYFORMS/empower.jpg' %}" alt="Empower Referrals" />
+                </div>
+                <div class="card-body">
+                    <div class="card-title-text">Empower Referrals</div>
+                    <div class="card-desc">Earn free fuel or cash every time someone you refer buys a stove or fuel through Greenergy.</div>
+                    <div class="card-arrow">Join Now →</div>
+               </div>
+            </a>
+        </div>
+    </section>
+    </div>
+
+    <div class="full-divider"></div>
+
+    <!-- ─── FOOTER ─── -->
+    <footer class="page-section">
+        <div class="footer-brand">GREEN<span>ERGY</span> & Bukona Agro</div>
+        <div class="footer-text">© 2026 Greenergy Climate Solutions · www.bukonaagro.com</div>
+    </footer>
+
+    <script>
+        // Profile dropdown
+        function toggleProfile() {
+            document.getElementById('profileWrap').classList.toggle('open');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            const wrap = document.getElementById('profileWrap');
+            if (wrap && !wrap.contains(e.target)) {
+                wrap.classList.remove('open');
+            }
+            const burger = document.getElementById('burger');
+            const mobileMenu = document.getElementById('mobileMenu');
+            if (!burger.contains(e.target) && !mobileMenu.contains(e.target)) {
+                mobileMenu.classList.remove('open');
+            }
+        });
+
+        // Preview profile picture instantly when selected
+        function previewAvatar(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Show preview instantly
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const url = e.target.result;
+        document.getElementById('navAvatar').innerHTML =
+            `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+    };
+    reader.readAsDataURL(file);
+
+    // Save permanently to Django
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+    fetch("{% url 'users:upload_avatar' %}", {
+        method: 'POST',
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.url) {
+            // Update both avatars with the saved URL from server
+            const savedUrl = data.url;
+            document.getElementById('navAvatar').innerHTML =
+                `<img src="${savedUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+        }
+    })
+    .catch(err => console.error('Upload failed:', err));
+}
+        function showSection(id) {
+            // Hide hero
+            document.getElementById('home').style.display = 'none';
+
+            // Hide and reset all page-sections
+            document.querySelectorAll('.page-section').forEach(s => {
+                s.style.display = 'none';
+                s.classList.remove('run');
+            });
+
+            // Hide dividers
+            document.querySelectorAll('.full-divider').forEach(d => {
+                d.style.display = 'none';
+            });
+
+            if (id === 'home') {
+                document.getElementById('home').style.display = 'flex';
+            } else {
+                const target = document.getElementById(id);
+                if (target) {
+                    target.style.display = 'block';
+                    // Force browser to register the display change before animating
+                    void target.offsetWidth;
+                    target.classList.add('run');
+                }
+
+                const footer = document.querySelector('footer');
+                if (footer) {
+                    footer.style.display = 'flex';
+                    void footer.offsetWidth;
+                    footer.classList.add('run');
+                }
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            // Update active nav link
+            document.querySelectorAll('.nav-links a').forEach(a => a.classList.remove('active'));
+            const activeLink = document.querySelector(`.nav-links a[onclick="showSection('${id}')"]`);
+            if (activeLink) activeLink.classList.add('active');
+        }
+
+        // Sticky nav
+        const nav = document.getElementById('topnav');
+        window.addEventListener('scroll', () => {
+            nav.classList.toggle('scrolled', window.scrollY > 20);
+        });
+
+        // Mobile menu
+        const burger = document.getElementById('burger');
+        const mobileMenu = document.getElementById('mobileMenu');
+        burger.addEventListener('click', () => mobileMenu.classList.toggle('open'));
+
+        function closeMenu() { mobileMenu.classList.remove('open'); }
+    </script>
+
+</body>
+</html>

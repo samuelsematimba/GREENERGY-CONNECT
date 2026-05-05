@@ -1,0 +1,11 @@
+{% extends "GREENERGYFORMS/generate.html" %}
+{% block context %}
+{% endblock %}
+{% block content %}
+    <p style="font-weight: bold; font-size: medium;font-family: monospace"> successfully imported to django DB </p>
+{% endblock %}
+{% block text %}
+    PROCEED TO MAKE QR CODES
+{% endblock %}
+{% block sam %}
+    <a href="{% url 'GREENERGYFORMS:makeqr' %}"> {% endblock %}

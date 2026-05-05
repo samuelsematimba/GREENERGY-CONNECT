@@ -1,0 +1,529 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREENERGY — Empower Records</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="{% static 'GREENERGYFORMS/favicon.png' %}">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --teal: #00B8A9; --ink: #0d1f1e; --white: #ffffff;
+            --muted: rgba(255,255,255,0.5);
+            --card-bg: rgba(255,255,255,0.04);
+            --card-border: rgba(0,184,169,0.18);
+            --nav-h: 68px;
+        }
+        body { font-family: 'DM Sans', sans-serif; background: var(--ink); color: var(--white); min-height: 100vh; }
+        body::before {
+            content: ''; position: fixed; inset: 0; z-index: 0;
+            background: radial-gradient(ellipse at 10% 20%, rgba(0,184,169,0.12) 0%, transparent 50%),
+                        radial-gradient(ellipse at 90% 80%, rgba(0,184,169,0.07) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        /* ── NAV ── */
+        nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            height: var(--nav-h); display: flex; align-items: center; justify-content: space-between;
+            padding: 0 40px; background: rgba(13,31,30,0.85); backdrop-filter: blur(18px);
+            border-bottom: 1px solid rgba(0,184,169,0.12);
+        }
+        .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+        .nav-logo { width: 34px; height: 34px; background: linear-gradient(135deg, var(--teal), #00e5d4); border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: var(--ink); }
+        .nav-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--white); }
+        .nav-title span { color: var(--teal); }
+        .btn-back { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; background: transparent; border: 1px solid rgba(0,184,169,0.3); border-radius: 10px; color: var(--white); font-size: 13px; font-weight: 600; text-decoration: none; font-family: 'Syne', sans-serif; transition: background 0.2s, border-color 0.2s, color 0.2s; }
+        .btn-back:hover { background: rgba(0,184,169,0.1); border-color: var(--teal); color: var(--teal); }
+
+        /* ── PAGE ── */
+        .page {
+            position: relative; z-index: 1;
+            padding-top: calc(var(--nav-h) + 48px); padding-bottom: 64px;
+            max-width: 1200px; margin: 0 auto;
+            padding-left: 24px; padding-right: 24px;
+            animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: translateY(0); } }
+
+        .page-label { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--teal); margin-bottom: 10px; }
+        .page-title { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+        .page-sub { font-size: 15px; color: var(--muted); margin-bottom: 36px; }
+
+        /* ── STATS ── */
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+        .stat-card {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 16px; padding: 24px;
+            animation: slideUp 0.6s ease both;
+        }
+        .stat-card:nth-child(2) { animation-delay: 0.07s; }
+        .stat-card:nth-child(3) { animation-delay: 0.14s; }
+        .stat-num { font-family: 'Syne', sans-serif; font-size: 36px; font-weight: 600; color: var(--teal); }
+        .stat-label { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+        /* ── TABLE SECTION ── */
+        .table-section { margin-bottom: 40px; }
+        .table-section-header {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 14px; margin-bottom: 18px;
+        }
+        .table-section-title { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+
+        /* search + export row */
+        .controls {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+        }
+        .search-wrap { position: relative; }
+        .search-wrap input {
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 10px; padding: 10px 16px 10px 40px;
+            font-size: 14px; color: var(--white); font-family: 'DM Sans', sans-serif;
+            outline: none; width: 240px;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-text-fill-color: var(--white);
+        }
+        .search-wrap input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,184,169,0.12); }
+        .search-wrap input::placeholder { color: rgba(255,255,255,0.25); }
+        .search-icon { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); font-size: 14px; color: var(--muted); pointer-events: none; }
+
+        .btn-export {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 18px; background: rgba(0,184,169,0.1);
+            border: 1px solid rgba(0,184,169,0.3); border-radius: 10px;
+            font-size: 13px; font-weight: 600; color: var(--teal);
+            cursor: pointer; font-family: 'Syne', sans-serif;
+            transition: background 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .btn-export:hover { background: rgba(0,184,169,0.2); border-color: var(--teal); }
+
+        /* ── FILTER BAR ── */
+        .filter-bar {
+            display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 14px; padding: 14px 18px; margin-bottom: 18px;
+        }
+        .filter-bar label { font-size: 12px; font-weight: 600; color: var(--teal); text-transform: uppercase; letter-spacing: 1px; white-space: nowrap; }
+        .filter-select, .filter-date {
+            background: rgba(255,255,255,0.05); border: 1px solid var(--card-border);
+            border-radius: 9px; padding: 9px 14px;
+            font-size: 13px; color: var(--white); font-family: 'DM Sans', sans-serif;
+            outline: none; cursor: pointer;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-text-fill-color: var(--white);
+        }
+        .filter-select option { background: #0d1f1e; color: var(--white); }
+        .filter-select:focus, .filter-date:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,184,169,0.12); }
+        .filter-date::-webkit-calendar-picker-indicator { filter: invert(0.7); cursor: pointer; }
+        .filter-divider { width: 1px; height: 24px; background: rgba(255,255,255,0.1); flex-shrink: 0; }
+        .btn-clear-filter {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 8px 14px; background: transparent;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 9px;
+            font-size: 12px; font-weight: 600; color: var(--muted);
+            cursor: pointer; font-family: 'Syne', sans-serif;
+            transition: border-color 0.2s, color 0.2s;
+        }
+        .btn-clear-filter:hover { border-color: rgba(255,100,100,0.4); color: #ff6b6b; }
+
+        /* ── TABLE ── */
+        .table-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 20px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        thead tr { border-bottom: 1px solid rgba(0,184,169,0.15); }
+        th { font-size: 11px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--teal); padding: 16px 20px; text-align: left; white-space: nowrap; }
+        td { padding: 14px 20px; font-size: 14px; color: rgba(255,255,255,0.8); border-bottom: 1px solid rgba(255,255,255,0.04); }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background: rgba(0,184,169,0.04); }
+        .num-cell { color: var(--muted); font-size: 13px; }
+        .code-cell { font-family: 'DM Sans', monospace; color: var(--teal); font-weight: 700; font-size: 13px; }
+
+        /* badges */
+        .badge {
+            display: inline-block; padding: 4px 12px; border-radius: 20px;
+            font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+        }
+        .badge-pending { background: rgba(249,168,37,0.12); border: 1px solid rgba(249,168,37,0.3); color: #fcd34d; }
+        .badge-claimed { background: rgba(0,184,169,0.12); border: 1px solid rgba(0,184,169,0.3); color: var(--teal); }
+
+        .empty-row td { text-align: center; padding: 40px; color: var(--muted); font-style: italic; }
+
+        /* ── PAGINATION ── */
+        .pagination {
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 12px;
+            margin-top: 18px;
+        }
+        .page-info { font-size: 13px; color: var(--muted); }
+        .page-buttons { display: flex; gap: 6px; flex-wrap: wrap; }
+        .page-btn {
+            width: 36px; height: 36px;
+            display: flex; align-items: center; justify-content: center;
+            background: var(--card-bg); border: 1px solid var(--card-border);
+            border-radius: 8px; font-size: 13px; font-weight: 600;
+            color: var(--muted); cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            font-family: 'Syne', sans-serif;
+        }
+        .page-btn:hover { background: rgba(0,184,169,0.1); border-color: var(--teal); color: var(--white); }
+        .page-btn.active { background: var(--teal); border-color: var(--teal); color: var(--ink); }
+        .page-btn.nav-btn { width: auto; padding: 0 14px; gap: 4px; }
+        .page-btn:disabled { opacity: 0.3; cursor: not-allowed; pointer-events: none; }
+
+        @media (max-width: 768px) {
+            nav { padding: 0 20px; }
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .stats-grid .stat-card:last-child { grid-column: 1 / -1; }
+            th, td { padding: 12px 14px; }
+            .search-wrap input { width: 180px; }
+            .table-section-header { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <a href="{% url 'GREENERGYFORMS:index' %}" class="nav-brand">
+            <div class="nav-logo">
+                <img src="{% static 'GREENERGYFORMS/GREENERGY.png' %}" alt="logo" style="width:45px; height:36px;">
+            </div>
+            <span class="nav-title">GREEN<span>ERGY</span></span>
+        </a>
+        <a href="{% url 'GREENERGYFORMS:index' %}" class="btn-back">← Back to Home</a>
+    </nav>
+
+    <div class="page">
+        <p class="page-label">Empower Programme</p>
+        <h1 class="page-title">All Records</h1>
+        <p class="page-sub">View, search and export all registered customers and Empower claims.</p>
+
+        <!-- Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-num" id="totalCustomers">{{ all_customers.count }}</div>
+                <div class="stat-label" id="custLabel">Total Customers</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="totalClaims">{{ all_claims.count }}</div>
+                <div class="stat-label">Total Claims</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-num" id="pendingCount">—</div>
+                <div class="stat-label">Pending Gifts</div>
+            </div>
+        </div>
+
+        <!-- ── CUSTOMERS TABLE ── -->
+        <div class="table-section">
+            <div class="table-section-header">
+                <h2 class="table-section-title">Registered Customers</h2>
+                <div class="controls">
+                    <div class="search-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="customerSearch" placeholder="Search name, phone, NIN…" oninput="filterCustomers()" />
+                    </div>
+                    <button class="btn-export" onclick="exportCSV('customersTable', 'customers')">⬇ Export Data</button>
+                    <a href="{% url 'GREENERGYFORMS:download_template' %}" class="btn-export">⬇ Template</a>
+                    <a href="{% url 'GREENERGYFORMS:upload' %}" class="btn-export">⬆ Upload</a>
+                </div>
+            </div>
+
+            <!-- ── FILTER BAR ── -->
+            <div class="filter-bar">
+                <label>Filter by</label>
+
+                <label for="outletFilter" style="margin-left:4px;">Outlet</label>
+                <select id="outletFilter" class="filter-select" onchange="filterCustomers()">
+                    <option value="">All Outlets</option>
+                    {% for customer in all_customers %}
+                        <option value="{{ customer.outlet|lower }}">{{ customer.outlet }}</option>
+                    {% endfor %}
+                </select>
+
+                <div class="filter-divider"></div>
+
+                <label for="dateFrom">From</label>
+                <input type="date" id="dateFrom" class="filter-date" onchange="filterCustomers()" />
+
+                <label for="dateTo">To</label>
+                <input type="date" id="dateTo" class="filter-date" onchange="filterCustomers()" />
+
+                <div class="filter-divider"></div>
+
+                <button class="btn-clear-filter" onclick="clearCustomerFilters()">✕ Clear</button>
+            </div>
+
+            <div class="table-card">
+                <table id="customersTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Full Name</th>
+                            <th>NIN</th>
+                            <th>stove number</th>
+                            <th>Outlet</th>
+                            <th>Phone Number</th>
+                            <th>Referral Code</th>
+                            <th>Date Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody id="customersBody">
+                        {% if all_customers %}
+                            {% for customer in all_customers %}
+                            <tr class="customer-row"
+                                data-search="{{ customer.full_name|lower }} {{ customer.phone_number }} {{ customer.nin|lower }} {{ customer.referral_code|lower }}"
+                                data-outlet="{{ customer.outlet|lower }}"
+                                data-date="{{ customer.date_registered|date:'Y-m-d' }}">
+                                <td class="num-cell">{{ forloop.counter }}</td>
+                                <td>{{ customer.full_name }}</td>
+                                <td style="font-size:13px; color:var(--muted);">{{ customer.nin }}</td>
+                                <td style="font-size:13px; color:var(--muted);">{{ customer.stove_number }}</td>
+                                <td style="font-size:13px; color:var(--muted);">{{ customer.outlet }}</td>
+                                <td>{{ customer.phone_number }}</td>
+                                <td><span class="code-cell">{{ customer.referral_code }}</span></td>
+                                <td style="color:var(--muted); font-size:13px;">{{ customer.date_registered|date:"d M Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="9" class="empty-row">No customers registered yet.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination customers -->
+            <div class="pagination" id="custPagination">
+                <div class="page-info" id="custPageInfo"></div>
+                <div class="page-buttons" id="custPageButtons"></div>
+            </div>
+        </div>
+
+        <!-- ── CLAIMS TABLE ── -->
+        <div class="table-section">
+            <div class="table-section-header">
+                <h2 class="table-section-title">All Empower Claims</h2>
+                <div class="controls">
+                    <div class="search-wrap">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="claimsSearch" placeholder="Search recommender, buyer…" oninput="filterClaims()" />
+                    </div>
+                    <button class="btn-export" onclick="exportCSV('claimsTable', 'claims')">⬇ Export CSV</button>
+                </div>
+            </div>
+
+            <div class="table-card">
+                <table id="claimsTable">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Recommender</th>
+                            <th>Buyer</th>
+                            <th>Status</th>
+                            <th>Receipt Number</th>
+                            <th>Date Earned</th>
+                            <th>Date Claimed</th>
+                        </tr>
+                    </thead>
+                    <tbody id="claimsBody">
+                        {% if all_claims %}
+                            {% for claim in all_claims %}
+                            <tr class="claim-row"
+                                data-search="{{ claim.recommender.full_name|lower }} {{ claim.sale.buyer.full_name|lower }} {{ claim.status|lower }}"
+                                data-outlet="{{ claim.sale.buyer.outlet|lower }}"
+                                data-status="{{ claim.status|lower }}">
+                                <td class="num-cell">{{ forloop.counter }}</td>
+                                <td>{{ claim.recommender.full_name }}</td>
+                                <td>{{ claim.sale.buyer.full_name }}</td>
+                                <td>
+                                    {% if claim.status == 'PENDING' %}
+                                        <span class="badge badge-pending">Pending</span>
+                                    {% else %}
+                                        <span class="badge badge-claimed">Claimed</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:13px; color:var(--muted);">{{ claim.sales_number }}</td>
+                                <td style="color:var(--muted); font-size:13px;">{{ claim.date_created|date:"d M Y" }}</td>
+                                <td style="color:var(--muted); font-size:13px;">
+                                    {% if claim.date_claimed %}{{ claim.date_claimed|date:"d M Y" }}{% else %}—{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr><td colspan="7" class="empty-row">No claims recorded yet.</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination claims -->
+            <div class="pagination" id="claimPagination">
+                <div class="page-info" id="claimPageInfo"></div>
+                <div class="page-buttons" id="claimPageButtons"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const PER_PAGE = 10;
+
+        // ── Generic paginator ──
+        function paginate(rowSelector, pageInfoId, pageButtonsId) {
+            const rows = Array.from(document.querySelectorAll(rowSelector)).filter(r => r.style.display !== 'none');
+            const total = rows.length;
+            const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+
+            const state = { current: 1 };
+
+            function render() {
+                // show/hide rows
+                rows.forEach((r, i) => {
+                    r.style.display = (i >= (state.current - 1) * PER_PAGE && i < state.current * PER_PAGE) ? '' : 'none';
+                });
+
+                // page info
+                const from = total === 0 ? 0 : (state.current - 1) * PER_PAGE + 1;
+                const to = Math.min(state.current * PER_PAGE, total);
+                document.getElementById(pageInfoId).textContent = total === 0 ? 'No results' : `Showing ${from}–${to} of ${total}`;
+
+                // buttons
+                const btnContainer = document.getElementById(pageButtonsId);
+                btnContainer.innerHTML = '';
+
+                // prev
+                const prev = document.createElement('button');
+                prev.className = 'page-btn nav-btn';
+                prev.textContent = '← Prev';
+                prev.disabled = state.current === 1;
+                prev.onclick = () => { state.current--; render(); };
+                btnContainer.appendChild(prev);
+
+                // page numbers
+                for (let p = 1; p <= totalPages; p++) {
+                    if (totalPages > 7 && p > 2 && p < totalPages - 1 && Math.abs(p - state.current) > 1) {
+                        if (p === 3 || p === totalPages - 2) {
+                            const dots = document.createElement('span');
+                            dots.className = 'page-btn'; dots.textContent = '…'; dots.style.cursor = 'default'; dots.style.pointerEvents = 'none';
+                            btnContainer.appendChild(dots);
+                        }
+                        continue;
+                    }
+                    const btn = document.createElement('button');
+                    btn.className = 'page-btn' + (p === state.current ? ' active' : '');
+                    btn.textContent = p;
+                    btn.onclick = () => { state.current = p; render(); };
+                    btnContainer.appendChild(btn);
+                }
+
+                // next
+                const next = document.createElement('button');
+                next.className = 'page-btn nav-btn';
+                next.textContent = 'Next →';
+                next.disabled = state.current === totalPages;
+                next.onclick = () => { state.current++; render(); };
+                btnContainer.appendChild(next);
+            }
+
+            render();
+            return state;
+        }
+
+        // ── Update the three stat cards based on current filters ──
+        function updateStatCards() {
+            const outlet = document.getElementById('outletFilter').value.toLowerCase();
+            const outletLabel = outlet
+                ? document.getElementById('outletFilter').options[document.getElementById('outletFilter').selectedIndex].text
+                : null;
+
+            // 1. Total Customers — count visible customer rows (respects search + outlet + date)
+            const visibleCustomers = Array.from(document.querySelectorAll('.customer-row'))
+                .filter(r => r.style.display !== 'none').length;
+            document.getElementById('totalCustomers').textContent = visibleCustomers;
+            document.getElementById('custLabel').textContent = outletLabel
+                ? `Customers · ${outletLabel}`
+                : 'Total Customers';
+
+            // 2. Total Claims — all claim rows that match selected outlet
+            const claimRows = Array.from(document.querySelectorAll('.claim-row'));
+            const matchingClaims = claimRows.filter(r => !outlet || r.dataset.outlet === outlet);
+            document.getElementById('totalClaims').textContent = matchingClaims.length;
+
+            // 3. Pending Gifts — pending claims within the same outlet filter
+            const pendingClaims = matchingClaims.filter(r => r.dataset.status === 'pending');
+            document.getElementById('pendingCount').textContent = pendingClaims.length;
+        }
+
+        // ── Customer search + filters ──
+        let custState;
+        function filterCustomers() {
+            const q      = document.getElementById('customerSearch').value.toLowerCase();
+            const outlet = document.getElementById('outletFilter').value.toLowerCase();
+            const from   = document.getElementById('dateFrom').value;   // "YYYY-MM-DD" or ""
+            const to     = document.getElementById('dateTo').value;     // "YYYY-MM-DD" or ""
+
+            document.querySelectorAll('.customer-row').forEach(r => {
+                const matchSearch = r.dataset.search.includes(q);
+                const matchOutlet = !outlet || r.dataset.outlet === outlet;
+                const d = r.dataset.date || '';
+                const matchFrom = !from || d >= from;
+                const matchTo   = !to   || d <= to;
+                r.style.display = (matchSearch && matchOutlet && matchFrom && matchTo) ? '' : 'none';
+            });
+
+            custState = paginate('.customer-row', 'custPageInfo', 'custPageButtons');
+            updateStatCards(); // ← recalculate all three counters
+        }
+
+        function clearCustomerFilters() {
+            document.getElementById('customerSearch').value = '';
+            document.getElementById('outletFilter').value  = '';
+            document.getElementById('dateFrom').value = '';
+            document.getElementById('dateTo').value   = '';
+            filterCustomers();
+        }
+
+        // ── Claims search ──
+        let claimState;
+        function filterClaims() {
+            const q = document.getElementById('claimsSearch').value.toLowerCase();
+            document.querySelectorAll('.claim-row').forEach(r => {
+                r.style.display = r.dataset.search.includes(q) ? '' : 'none';
+            });
+            claimState = paginate('.claim-row', 'claimPageInfo', 'claimPageButtons');
+        }
+
+        // ── Export CSV ──
+        function exportCSV(tableId, filename) {
+            const table = document.getElementById(tableId);
+            const rows = table.querySelectorAll('tr');
+            const csv = [];
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('th, td');
+                const rowData = Array.from(cells).map(c => `"${c.innerText.trim().replace(/"/g, '""')}"`);
+                csv.push(rowData.join(','));
+            });
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `greenergy_${filename}_${new Date().toISOString().slice(0,10)}.csv`;
+            a.click();
+        }
+
+        // ── Deduplicate outlet dropdown ──
+        (function dedupeOutlets() {
+            const sel = document.getElementById('outletFilter');
+            const seen = new Set();
+            Array.from(sel.options).forEach(opt => {
+                if (opt.value === '') return;
+                const key = opt.value.trim().toLowerCase();
+                if (seen.has(key)) { opt.remove(); } else { seen.add(key); }
+            });
+        })();
+
+        // ── Init pagination + stat cards on page load ──
+        custState  = paginate('.customer-row', 'custPageInfo', 'custPageButtons');
+        claimState = paginate('.claim-row', 'claimPageInfo', 'claimPageButtons');
+        updateStatCards(); // set correct numbers from the start
+    </script>
+</body>
+</html>

@@ -1,0 +1,63 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'GREENERGYFORMS/style3.css' %}" type="text/css" rel="stylesheet">
+    <title>VIEW_ORDERS</title>
+</head>
+
+<body>
+    <h3> 
+       GREENERGY CUSTOMER DATABASE  
+    </h3>
+    
+        <table cellpadding ='5', border="2",class="tbl">
+            <tr>
+                <th>location</th>
+                <th>sales date</th>
+                <th>givenname</th>
+                <th>surname</th>
+                <th>ninnumber</th>
+                <th>phonenumber</th>
+                <th>stove</th>
+                <th>serialNumber</th>
+                <th>date of sale</th>
+                <th>cash expected</th>
+                <th>cash recieved</th>
+                <th>National id</th>
+            </tr>
+            {% for entry in entries %}
+                <tr>
+                    <td>{{ entry.location2 }}</td>
+                    <td>{{ entry.date}}</td>
+                    <td>{{ entry.givenname}}</td>
+                    <td>{{ entry.surname}}</td>
+                    <td>{{ entry.nin}}</td>
+                    <td>{{entry.phonenumber}}</td>
+                    <td>{{entry.stove}}</td>
+                    <td>{{ entry.serialnumber}}</td>
+                    <td>{{entry.date}}</td>
+                    <td>{{entry.expected}}</td>
+                    <td>{{ entry.cashreceived}}</td>
+                    
+                   <td>
+                        {% if entry.national %}
+                        <img src="{{ entry.national.url }}" class="photo" width="40" height="20" >
+                            {% else %}
+                            no image
+                        {% endif %}
+                    </td>
+                 </tr>
+           {% endfor %}
+       </table>
+       <a href="{% url 'GREENERGYFORMS:GREENERGY_CUSTOMER_FORMS' %}" >
+            <button type="submit" class="kink"> Return to form </button>
+       </a>
+       <a href="{% url 'GREENERGYFORMS:index' %}" class="kink">
+            <button type="submit" class="kink"> Home </button>
+       </a>
+
+</body>
+</html>

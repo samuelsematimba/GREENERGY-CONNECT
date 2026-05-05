@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Claim Empower Gift</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2e7d32;
+        }
+        h3 {
+            color: #2e7d32;
+            border-bottom: 2px solid #2e7d32;
+            padding-bottom: 5px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 15px;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #1b5e20;
+        }
+        .claim-btn {
+            background-color: #f57f17;
+            margin-top: 10px;
+        }
+        .claim-btn:hover {
+            background-color: #e65100;
+        }
+        .message-success {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #2e7d32;
+        }
+        .message-error {
+            background-color: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #c62828;
+        }
+        .message-info {
+            background-color: #e3f2fd;
+            color: #1565c0;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border: 1px solid #1565c0;
+        }
+        .customer-card {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            border: 1px solid #2e7d32;
+        }
+        .customer-card p {
+            margin: 5px 0;
+            color: #333;
+        }
+        .claim-card {
+            background-color: #fff8e1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid #f9a825;
+        }
+        .claim-card p {
+            margin: 5px 0;
+            color: #555;
+        }
+        .no-claims {
+            text-align: center;
+            color: #888;
+            margin-top: 20px;
+            font-style: italic;
+        }
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #2e7d32;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        .header-bar {
+            background-color: #2e7d32;
+            padding: 15px;
+            text-align: center;
+        }
+        .header-bar h1 {
+            color: white;
+            margin: 0;
+            font-size: 22px;
+        }
+        .badge {
+            display: inline-block;
+            background-color: #2e7d32;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <h1>Empower Your Community</h1>
+    </div>
+
+    <div class="container">
+        <h2>Check Empower Claims</h2>
+
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                {% if message.tags == 'error' %}
+                    <div class="message-error">❌ {{ message }}</div>
+                {% elif message.tags == 'info' %}
+                    <div class="message-info">ℹ️ {{ message }}</div>
+                {% else %}
+                    <div class="message-success">✅ {{ message }}</div>
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+
+        <!-- Search Form -->
+        <form method="POST" action="{% url 'GREENERGYFORMS:empower_claim' %}">
+            {% csrf_token %}
+
+            <label>Customer Phone Number</label>
+            <input 
+                type="text" 
+                name="phone_number" 
+                placeholder="Enter phone number to search" 
+                required>
+
+            <button type="submit" name="lookup">Search Customer</button>
+
+        </form>
+
+        <!-- Customer Found -->
+        {% if customer %}
+            <div class="customer-card">
+                <h3>
+                    {{ customer.full_name }}
+                    <span class="badge">{{ pending_claims.count }} Pending</span>
+                </h3>
+                <p><strong>Phone:</strong> {{ customer.phone_number }}</p>
+                <p><strong>NIN:</strong> {{ customer.nin }}</p>
+                <p><strong>Referral Code:</strong> {{ customer.referral_code }}</p>
+            </div>
+
+            <!-- Pending Claims -->
+            {% if pending_claims %}
+                <h3 style="margin-top:25px;">Pending Empower Gifts</h3>
+
+                {% for claim in pending_claims %}
+                    <div class="claim-card">
+                        <p><strong>Gift #{{ forloop.counter }}</strong></p>
+                        <p><strong>Buyer:</strong> {{ claim.sale.buyer.full_name }}</p>
+                        <p><strong>Date Earned:</strong> {{ claim.date_created|date:"d M Y" }}</p>
+                        <p><strong>Status:</strong> {{ claim.status }}</p>
+
+                        <form method="POST" action="{% url 'GREENERGYFORMS:empower_claim' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="claim_id" value="{{ claim.id }}">
+                            <button 
+                                type="submit" 
+                                class="claim-btn">
+                                🎁 Mark as Claimed
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+
+            {% else %}
+                <p class="no-claims">No pending Empower gifts for this customer.</p>
+            {% endif %}
+
+        {% endif %}
+
+        <a class="back-link" href="{% url 'GREENERGYFORMS:index' %}">
+            ← Back to Home
+        </a>
+
+    </div>
+
+</body>
+</html>

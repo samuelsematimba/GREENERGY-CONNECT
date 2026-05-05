@@ -1,0 +1,345 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GREENERGY — Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --teal: #00B8A9;
+            --teal-dark: #008f84;
+            --teal-light: #e0f7f5;
+            --ink: #0d1f1e;
+            --muted: #5a7a78;
+            --white: #ffffff;
+            --error: #e05252;
+            --border: rgba(0,184,169,0.2);
+        }
+
+        html, body {
+            height: 100%;
+            font-family: 'DM Sans', sans-serif;
+            background: var(--ink);
+            overflow: hidden;
+        }
+
+        /* animated background */
+        .bg {
+            position: fixed; inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(0,184,169,0.18) 0%, transparent 60%),
+                        radial-gradient(ellipse at 80% 20%, rgba(0,184,169,0.10) 0%, transparent 50%),
+                        linear-gradient(135deg, #0d1f1e 0%, #112322 50%, #0a1918 100%);
+        }
+
+        .bg::before {
+            content: '';
+            position: absolute; inset: 0;
+            background-image:
+                radial-gradient(circle, rgba(0,184,169,0.08) 1px, transparent 1px);
+            background-size: 40px 40px;
+            animation: drift 20s linear infinite;
+        }
+
+        @keyframes drift {
+            0% { transform: translate(0,0); }
+            100% { transform: translate(40px, 40px); }
+        }
+
+        /* floating orbs */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.15;
+            animation: float 8s ease-in-out infinite;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--teal); top: -100px; left: -100px; animation-delay: 0s; }
+        .orb-2 { width: 300px; height: 300px; background: #00e5d4; bottom: -80px; right: -80px; animation-delay: 4s; }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-30px) scale(1.05); }
+        }
+
+        /* layout */
+        .page {
+            position: relative; z-index: 10;
+            display: flex; align-items: center; justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .card {
+            background: rgba(255,255,255,0.04);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(0,184,169,0.2);
+            border-radius: 24px;
+            padding: 48px 44px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 32px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+            animation: slideUp 0.6s cubic-bezier(0.16,1,0.3,1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* brand */
+        .brand {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 36px;
+        }
+
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: linear-gradient(135deg, var(--teal), #00e5d4);
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 18px;
+            color: var(--ink);
+        }
+
+        .brand-name {
+            font-family: 'Syne', sans-serif;
+            font-weight: 700; font-size: 22px;
+            color: var(--white);
+            /*letter-spacing: 1px;*/
+        }
+
+        .brand-name span { color: var(--teal); }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 26px; font-weight: 700;
+            color: var(--white);
+            margin-bottom: 6px;
+        }
+
+        .card-sub {
+            font-size: 14px; color: var(--muted);
+            margin-bottom: 32px;
+            line-height: 1.5;
+        }
+
+        /* error */
+        .error-banner {
+            background: rgba(224,82,82,0.12);
+            border: 1px solid rgba(224,82,82,0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            color: #f8a0a0;
+            font-size: 13px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .error-banner::before { content: '⚠'; font-size: 15px; }
+
+        /* form */
+        .field { margin-bottom: 20px; }
+
+        .field label {
+            display: block;
+            font-size: 12px; font-weight: 500;
+            color: var(--teal);
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .field input {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(0,184,169,0.2);
+            border-radius: 12px;
+            padding: 14px 16px;
+            font-size: 15px;
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+            /* prevent autofill yellow flash */
+            -webkit-text-fill-color: var(--white);
+        }
+
+        .field input:-webkit-autofill,
+        .field input:-webkit-autofill:hover,
+        .field input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0px 1000px #112322 inset;
+            -webkit-text-fill-color: var(--white);
+            caret-color: var(--white);
+        }
+
+        .field input:focus {
+            border-color: var(--teal);
+            background: rgba(0,184,169,0.06);
+            box-shadow: 0 0 0 3px rgba(0,184,169,0.12);
+        }
+
+        .field input::placeholder { color: rgba(255,255,255,0.25); }
+
+        /* password wrapper */
+        .pw-wrap { position: relative; }
+        .pw-toggle {
+            position: absolute; right: 14px; top: 50%;
+            transform: translateY(-50%);
+            background: none; border: none;
+            cursor: pointer; color: var(--muted);
+            font-size: 16px; padding: 4px;
+            transition: color 0.2s;
+        }
+        .pw-toggle:hover { color: var(--teal); }
+
+        /* submit */
+        .btn-login {
+            width: 100%;
+            background: linear-gradient(135deg, var(--teal) 0%, #00e5d4 100%);
+            border: none; border-radius: 12px;
+            padding: 15px;
+            font-family: 'Syne', sans-serif;
+            font-size: 15px; font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--ink);
+            cursor: pointer;
+            margin-top: 8px;
+            transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
+            box-shadow: 0 8px 24px rgba(0,184,169,0.35);
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(0,184,169,0.45);
+            filter: brightness(1.05);
+        }
+
+        .btn-login:active { transform: translateY(0); }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.25);
+            line-height: 1.6;
+        }
+
+        .footer-note a { color: var(--teal); text-decoration: none; }
+        .footer-note a:hover { text-decoration: underline; }
+
+        /* Empower badge */
+        .empower-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            background: rgba(0,184,169,0.1);
+            border: 1px solid rgba(0,184,169,0.25);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 11px; font-weight: 600;
+            color: var(--teal);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+
+        .empower-badge::before { content: '◆'; font-size: 8px; }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="page">
+        <div class="card">
+
+            <div class="brand">
+                <div class="brand-icon">
+                    <img src="{% static 'GREENERGYFORMS/GREENERGY.png' %}" alt="logo" style="width:45px; height:40px;">
+                </div>
+                <div class="brand-name">GREEN<span>ERGY</span></div>
+            </div>
+
+            <div class="empower-badge">Empower Platform</div>
+
+            <h1 class="card-title">Welcome back</h1>
+            <p class="card-sub">Sign in to your account to continue</p>
+
+            {% if form.errors %}
+            <div class="error-banner">Your username or password is incorrect. Please try again.</div>
+            {% endif %}
+
+            {% if error %}
+            <div class="error-banner">{{ error }}</div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'users:logins' %}" autocomplete="off" novalidate>
+                {% csrf_token %}
+
+                <div class="field">
+                    <label for="username">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        placeholder="Enter your username"
+                        required
+                        autocomplete="new-password"
+                        spellcheck="false"
+                        data-form-type="other"
+                    />
+                </div>
+
+                <div class="field">
+                    <label for="password">Password</label>
+                    <div class="pw-wrap">
+                        <input
+                            type="password"
+                            id="password"
+                            name="password"
+                            placeholder="Enter your password"
+                            required
+                            autocomplete="new-password"
+                            data-form-type="other"
+                        />
+                        <button type="button" class="pw-toggle" onclick="togglePw()" id="eyeBtn" aria-label="Toggle password">👁</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-login">SIGN IN</button>
+            </form>
+
+            <p class="footer-note">
+                Greenergy Climate Solutions &nbsp;·&nbsp; <a href="#">Need help?</a><br>
+                © 2026 Bukona Agro. All rights reserved.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function togglePw() {
+            const input = document.getElementById('password');
+            const btn = document.getElementById('eyeBtn');
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.textContent = '🙈';
+            } else {
+                input.type = 'password';
+                btn.textContent = '👁';
+            }
+        }
+
+        // Aggressively clear autofill on page load
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                document.getElementById('username').value = '';
+                document.getElementById('password').value = '';
+            }, 100);
+        });
+    </script>
+</body>
+</html>

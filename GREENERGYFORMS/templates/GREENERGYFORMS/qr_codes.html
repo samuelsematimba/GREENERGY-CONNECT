@@ -1,0 +1,40 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href ="{% static 'GREENERGYFORMS/style4.css' %}" type="text/css" rel="stylesheet" />
+    <title>QR GENERATOR</title>
+</head>
+<body>
+    <nav>
+        <div>
+            <li><a href="{% url 'GREENERGYFORMS:index'%}"> Home</a></li>
+            <li><a href="{% url 'GREENERGYFORMS:GREENERGY_CUSTOMER_FORMS'%}">form</a></li>
+            <li>view Qr</li>
+        </div>
+    </nav>
+    <form class ="form" action="{% url 'GREENERGYFORMS:save2'%}" enctype="multipart/form-data" method="POST">
+        {%csrf_token %}
+        <header>
+            <h3>UPLOAD EXCEL FILE</h3>
+        </header>
+        <fieldset>
+             <input type="file" name="excel">
+        </fieldset>
+    
+       <button id="btt" type="submit" style=
+            "background-color: rgb(15, 216, 55);
+            height:20px;
+            border-radius:4px;
+            justify-content:center;
+            font-family: sans-serif;
+            display:flex;
+            width:350px">SUBMIT EXCEL
+        </button>
+    </form>
+
+    
+</body>
+</html>

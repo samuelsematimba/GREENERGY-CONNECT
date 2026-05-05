@@ -1,0 +1,62 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'GREENERGYFORMS/style4.css' %}" type="text/css" rel="stylesheet" />
+    <title>GENERATE QR CODES </title>
+</head>
+<body>
+    <nav>
+        <div>
+            <li><a href="{% url 'GREENERGYFORMS:index'%}"> Home</a></li>
+            <li><a href="{% url 'GREENERGYFORMS:GREENERGY_CUSTOMER_FORMS'%}">form</a></li>
+            <li><a href="{% url 'GREENERGYFORMS:show_qr'%}">view Qr</a></li>
+        </div>
+    </nav>
+    
+ <hr />
+    <table cell padding="5", border="2", class="tbl">
+        <header>
+            THESE NUMBERS HAVE BEEN EXTRACTED
+        </header>
+        <tr>
+            <th>Single burner</th>
+            <th>Double burner</th>
+            <th>date created</th>
+            <th> qr generated</th>
+        </tr>
+
+        {% for entries in data %}
+            <tr>
+                <td>{{entries.Singleburner}}</td>
+                <td>{{entries.Doubleburner}}</td>
+                <td>{{entries.created_at}}</td>
+                <td>{{entries.qr_generated}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <table>
+        <header>
+            THESE QR CODES HAVE BEEN GENERATED
+        </header>
+        <tr>
+            <th>singleburner</th>
+            <th>doubleburner</th>
+        </tr>
+        {% for qrs in qr %}
+        <tr>
+            <td>{{qr.qr_codeSB}}</td>
+            <td>{{qr.qr_codeDB}}</td>
+            <td>{{qr.qr_generated}}</td>
+        </tr>
+
+    </table>
+
+
+    
+
+    
+</body>
+</html>

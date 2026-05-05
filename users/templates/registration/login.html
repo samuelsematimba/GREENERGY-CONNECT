@@ -1,0 +1,46 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{% static 'users/stylex1.css' %}" type="text/css" rel="stylesheet" >
+    <title>GREENERGY login</title>
+</head>
+<body>
+    
+    {%if form.errors %}
+        <p style=
+        "font-family: 'Courier New', Courier, monospace;
+        color:rgb(247, 249, 250);
+        font-size: small;">
+            your username and password dont match try again 
+        </p>
+    {% endif %}
+    <form method="POST" action="{% url 'users:login' %}" autocomplete="off" >
+        {% csrf_token%}
+        <h2 style="color:rgb(26, 27, 27);justify-content: center;align-items: center;">GREENERGY</h2>
+        <fieldset class="yes">
+            <div class="cloumn">
+                <div class="form-group">
+                    <label for="idm" class="lbl"> User name </label>
+                    <input type="text" class="form" name="username" required autocomplete="off"/>
+                </div>
+            
+                <div class="form-group">
+                    <label for="idm2" class="lbl"> Password </label>
+                    <input type="password" class="form2" name="password" required  autocomplete="off"/>
+                
+            </div>
+            
+            <button name="submit" id="btt">
+                lOG IN
+            </button>
+            
+        </fieldset>
+        
+    </form>
+
+    
+</body>
+</html>
