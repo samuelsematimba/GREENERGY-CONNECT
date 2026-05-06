@@ -1,3 +1,6 @@
 form2/
 __pycache__/
 *.sqlite3
+.env
+.ds_store
+*.pyc
