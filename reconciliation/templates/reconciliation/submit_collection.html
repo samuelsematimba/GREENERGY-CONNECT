@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Submit Collection{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Submit Agent Collection</h1><p>Report your collections for the period</p></div>
+    <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:600px;">
+    <form method="POST">{% csrf_token %}
+        {% if outlet %}<input type="hidden" name="outlet" value="{{ outlet.id }}">
+        <div class="form-group"><label>Outlet</label><input type="text" value="{{ outlet.name }}" disabled></div>
+        {% else %}<div class="form-group"><label>Outlet</label>
+            <select name="outlet" required><option value="">Select outlet…</option>
+                {% for o in outlets %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}
+            </select></div>{% endif %}
+        <div class="form-row">
+            <div class="form-group"><label>Period From *</label><input type="date" name="period_start" required></div>
+            <div class="form-group"><label>Period To *</label><input type="date" name="period_end" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Cash Collected</label><input type="number" name="cash_amount" placeholder="0" step="0.01" min="0" value="0"></div>
+            <div class="form-group"><label>Mobile Money Amount</label><input type="number" name="mobile_money_amount" placeholder="0" step="0.01" min="0" value="0"></div>
+        </div>
+        <div class="form-group"><label>Mobile Money Reference</label><input type="text" name="mobile_money_reference" placeholder="Transaction reference number"></div>
+        <p class="text-muted mt-8">The system will auto-calculate the expected amount from your recorded sales.</p>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Submit Collection</button>
+            <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

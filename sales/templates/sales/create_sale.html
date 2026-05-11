@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}New Sale{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>New Sale</h1><p>Record a customer sale transaction</p></div>
+    <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<form method="POST" enctype="multipart/form-data">{% csrf_token %}
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+    <div class="card">
+        <div class="card-title">Customer Information</div>
+        <div class="form-row">
+            <div class="form-group"><label>Full Name *</label><input type="text" name="full_name" required placeholder="Customer full name"></div>
+            <div class="form-group"><label>Gender</label>
+                <select name="gender"><option value="">—</option><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option></select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>NIN (National ID) *</label><input type="text" name="nin" required placeholder="e.g. CM900XXXXX" maxlength="20" style="text-transform:uppercase;"></div>
+            <div class="form-group"><label>Phone Number *</label><input type="text" name="phone_number" required placeholder="e.g. 0701234567"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Village / Area</label><input type="text" name="village" placeholder="Village or area name"></div>
+            <div class="form-group"><label>District</label><input type="text" name="district" placeholder="District"></div>
+        </div>
+        <div class="form-group"><label>National ID Photo</label><input type="file" name="national_id_photo" accept="image/*"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Sale Details</div>
+        {% if outlet %}
+            <input type="hidden" name="outlet" value="{{ outlet.id }}">
+            <div class="form-group"><label>Outlet</label><input type="text" value="{{ outlet.name }}" disabled></div>
+        {% else %}
+            <div class="form-group"><label>Outlet *</label>
+                <select name="outlet" required><option value="">Select outlet…</option>
+                    {% for o in outlets %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}
+                </select>
+            </div>
+        {% endif %}
+        <div class="form-row">
+            <div class="form-group"><label>Payment Method *</label>
+                <select name="payment_method" required>
+                    <option value="">Select…</option>
+                    <option value="cash">Cash</option>
+                    <option value="mobile_money">Mobile Money</option>
+                    <option value="credit">Credit</option>
+                </select>
+            </div>
+            <div class="form-group"><label>Amount Paid</label><input type="number" name="amount_paid" placeholder="0" step="0.01" min="0"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Warranty Card</label><input type="file" name="warranty_card"></div>
+            <div class="form-group"><label>Receipt File</label><input type="file" name="receipt_file"></div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea name="notes" placeholder="Optional sale notes…"></textarea></div>
+    </div>
+</div>
+
+<div class="card" style="margin-top:20px;">
+    <div class="card-title flex-between">
+        <span>Products / Items</span>
+        <div class="btn-group">
+            <a href="{% url 'sales:scan_qr' %}" class="btn btn-outline btn-sm">📷 Scan QR</a>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addSaleItem()">+ Add Item</button>
+        </div>
+    </div>
+    <div id="saleItems">
+        <div class="sale-item" style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:12px;margin-bottom:10px;align-items:end;">
+            <div class="form-group"><label>Product</label>
+                <select name="product_ids" onchange="fillPrice(this)">
+                    <option value="">Select product…</option>
+                    {% for p in products %}<option value="{{ p.id }}" data-price="{{ p.base_price }}">{{ p.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group"><label>Serial No.</label><input type="text" name="serial_numbers" placeholder="Scan or type" style="text-transform:uppercase;"></div>
+            <div class="form-group"><label>Qty</label><input type="number" name="quantities" value="1" min="1"></div>
+            <div class="form-group"><label>Unit Price</label><input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-input"></div>
+        </div>
+    </div>
+    <div class="divider"></div>
+    <div style="text-align:right;"><span class="text-muted">Total: </span><span id="grandTotal" style="font-family:'Syne',sans-serif;font-size:22px;color:var(--teal);">0</span></div>
+</div>
+
+<div class="btn-group mt-16">
+    <button type="submit" class="btn btn-primary" style="padding:12px 32px;">✓ Record Sale</button>
+    <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">Cancel</a>
+</div>
+</form>
+{% endblock %}
+{% block extra_js %}
+<script>
+const prodOpts = `{% for p in products %}<option value="{{ p.id }}" data-price="{{ p.base_price }}">{{ p.name }}</option>{% endfor %}`;
+function fillPrice(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const priceInput = sel.closest('.sale-item').querySelector('.price-input');
+    if (opt && opt.dataset.price) priceInput.value = opt.dataset.price;
+    updateTotal();
+}
+function updateTotal() {
+    let total = 0;
+    document.querySelectorAll('.sale-item').forEach(item => {
+        const qty = parseFloat(item.querySelector('[name="quantities"]').value) || 0;
+        const price = parseFloat(item.querySelector('.price-input').value) || 0;
+        total += qty * price;
+    });
+    document.getElementById('grandTotal').textContent = total.toLocaleString();
+}
+document.addEventListener('input', e => { if(e.target.name === 'quantities' || e.target.name === 'unit_prices') updateTotal(); });
+function addSaleItem() {
+    const div = document.createElement('div');
+    div.className = 'sale-item';
+    div.style.cssText = 'display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:12px;margin-bottom:10px;align-items:end;';
+    div.innerHTML = `<div class="form-group"><label>Product</label><select name="product_ids" onchange="fillPrice(this)"><option value="">Select product…</option>${prodOpts}</select></div><div class="form-group"><label>Serial No.</label><input type="text" name="serial_numbers" placeholder="Scan or type" style="text-transform:uppercase;"></div><div class="form-group"><label>Qty</label><input type="number" name="quantities" value="1" min="1"></div><div class="form-group"><label>Unit Price</label><input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-input"></div>`;
+    document.getElementById('saleItems').appendChild(div);
+}
+</script>
+{% endblock %}

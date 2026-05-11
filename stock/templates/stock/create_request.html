@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Request Stock{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Request Stock</h1><p>Submit a stock request from outlet to warehouse</p></div>
+    <a href="{% url 'stock:request_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST" id="requestForm">{% csrf_token %}
+        <div class="form-row">
+            <div class="form-group"><label>Outlet</label>
+                {% if outlet %}<input type="hidden" name="outlet" value="{{ outlet.id }}"><input type="text" value="{{ outlet.name }}" disabled>
+                {% else %}<select name="outlet" required><option value="">Select outlet…</option>{% for o in outlets %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}</select>{% endif %}
+            </div>
+            <div class="form-group"><label>Warehouse</label>
+                <select name="warehouse" required><option value="">Select warehouse…</option>
+                    {% for w in warehouses %}<option value="{{ w.id }}">{{ w.name }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea name="notes" placeholder="Optional notes for the warehouse manager…"></textarea></div>
+        <div class="divider"></div>
+        <div class="card-title">Products Requested</div>
+        <div id="requestItems">
+            <div class="form-row" style="margin-bottom:10px;">
+                <div class="form-group"><label>Product</label>
+                    <select name="product_ids"><option value="">Select product…</option>
+                        {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-group"><label>Quantity</label><input type="number" name="quantities" min="1" value="1"></div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addRequestItem()">+ Add Product</button>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+            <a href="{% url 'stock:request_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const prodOpts = `{% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}`;
+function addRequestItem() {
+    const div = document.createElement('div');
+    div.className = 'form-row'; div.style.marginBottom = '10px';
+    div.innerHTML = `<div class="form-group"><label>Product</label><select name="product_ids"><option value="">Select product…</option>${prodOpts}</select></div><div class="form-group"><label>Quantity</label><input type="number" name="quantities" min="1" value="1"></div>`;
+    document.getElementById('requestItems').appendChild(div);
+}
+</script>
+{% endblock %}

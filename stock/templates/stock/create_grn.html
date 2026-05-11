@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Receive Stock{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Receive Stock</h1><p>Record new goods arriving at a warehouse</p></div>
+    <a href="{% url 'stock:grn_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:800px;">
+    <form method="POST" id="grnForm">{% csrf_token %}
+        <div class="form-row">
+            <div class="form-group"><label>Warehouse</label>
+                <select name="warehouse" required>
+                    <option value="">Select warehouse…</option>
+                    {% for w in warehouses %}<option value="{{ w.id }}">{{ w.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group"><label>Receipt Date</label><input type="date" name="receipt_date" required></div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea name="notes" placeholder="Optional notes about this delivery…"></textarea></div>
+        <div class="divider"></div>
+        <div class="card-title">Items Received</div>
+        <div id="grnItems">
+            <div class="grn-item card" style="padding:16px;margin-bottom:12px;">
+                <div class="form-row">
+                    <div class="form-group"><label>Product</label>
+                        <select name="product_ids" class="product-select" onchange="toggleSerials(this)">
+                            <option value="">Select product…</option>
+                            {% for p in products %}<option value="{{ p.id }}" data-type="{{ p.product_type }}">{{ p.name }} ({{ p.get_product_type_display }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="form-group"><label>Quantity</label><input type="number" name="quantities" min="0" value="0" placeholder="0"></div>
+                </div>
+                <div class="serial-area" style="display:none;">
+                    <div class="form-group"><label>Serial Numbers (one per line)</label>
+                        <textarea name="serial_numbers" rows="6" placeholder="SB-00001&#10;SB-00002&#10;SB-00003"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addGrnItem()">+ Add Another Product</button>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Save Goods Receipt</button>
+            <a href="{% url 'stock:grn_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const productsOptionsHtml = `{% for p in products %}<option value="{{ p.id }}" data-type="{{ p.product_type }}">{{ p.name }} ({{ p.get_product_type_display }})</option>{% endfor %}`;
+function toggleSerials(sel) {
+    const area = sel.closest('.grn-item').querySelector('.serial-area');
+    const opt = sel.options[sel.selectedIndex];
+    area.style.display = (opt && opt.dataset.type === 'serialized') ? 'block' : 'none';
+}
+function addGrnItem() {
+    const div = document.createElement('div');
+    div.className = 'grn-item card';
+    div.style.cssText = 'padding:16px;margin-bottom:12px;';
+    div.innerHTML = `<div class="form-row"><div class="form-group"><label>Product</label><select name="product_ids" class="product-select" onchange="toggleSerials(this)"><option value="">Select product…</option>${productsOptionsHtml}</select></div><div class="form-group"><label>Quantity</label><input type="number" name="quantities" min="0" value="0"></div></div><div class="serial-area" style="display:none;"><div class="form-group"><label>Serial Numbers (one per line)</label><textarea name="serial_numbers" rows="6" placeholder="SB-00001&#10;SB-00002"></textarea></div></div>`;
+    document.getElementById('grnItems').appendChild(div);
+}
+</script>
+{% endblock %}

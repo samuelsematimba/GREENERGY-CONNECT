@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <h1>{{ product.name }}</h1>
+        <p>SKU: <code style="color:var(--teal);">{{ product.sku }}</code> &nbsp;|&nbsp; {{ product.get_product_type_display }} &nbsp;|&nbsp; {{ product.category|default:"No Category" }}</p>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'products:edit_product' product.pk %}" class="btn btn-outline">Edit Product</a>
+        {% if product.product_type == 'serialized' %}<a href="{% url 'products:add_serialized' product.pk %}" class="btn btn-primary">+ Add Items</a>{% endif %}
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div>
+        <div class="card">
+            <div class="card-title">Product Details</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                <div><span class="text-muted">Base Price</span><br><strong style="color:var(--teal);font-size:20px;">{{ product.base_price|floatformat:0 }}</strong></div>
+                <div><span class="text-muted">Unit</span><br><strong>{{ product.get_unit_display }}</strong></div>
+                <div><span class="text-muted">Type</span><br><span class="badge {% if product.product_type == 'serialized' %}badge-teal{% else %}badge-yellow{% endif %}">{{ product.get_product_type_display }}</span></div>
+                <div><span class="text-muted">Status</span><br><span class="badge {% if product.is_active %}badge-green{% else %}badge-red{% endif %}">{% if product.is_active %}Active{% else %}Inactive{% endif %}</span></div>
+            </div>
+            {% if product.description %}<div class="divider"></div><p class="text-muted">{{ product.description }}</p>{% endif %}
+            {% if product.countries.all %}<div class="divider"></div><p class="text-muted">Available in: {% for c in product.countries.all %}<span class="chip">{{ c.name }}</span>{% endfor %}</p>{% endif %}
+        </div>
+
+        {% if product.product_type == 'serialized' and items %}
+        <div class="card">
+            <div class="card-title">Serialized Items ({{ items|length }})</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Serial Number</th><th>Status</th><th>Location</th><th>QR</th></tr></thead>
+                    <tbody>
+                    {% for item in items %}
+                    <tr>
+                        <td><code>{{ item.serial_number }}</code></td>
+                        <td><span class="badge {% if item.status == 'in_stock' %}badge-green{% elif item.status == 'sold' %}badge-gray{% elif item.status == 'in_transit' %}badge-yellow{% else %}badge-red{% endif %}">{{ item.get_status_display }}</span></td>
+                        <td>{{ item.current_location|default:"—" }}</td>
+                        <td>{% if item.qr_code %}<img src="{{ item.qr_code.url }}" height="40">{% else %}<a href="{% url 'products:generate_qr' item.pk %}" class="btn btn-outline btn-sm">Gen QR</a>{% endif %}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div>
+        {% if price_history %}
+        <div class="card">
+            <div class="card-title">Price History</div>
+            {% for ph in price_history %}
+            <div style="padding:8px 0;border-bottom:1px solid var(--card-border);">
+                <span style="color:var(--danger);">{{ ph.old_price|floatformat:0 }}</span>
+                &nbsp;→&nbsp;
+                <span style="color:var(--success);">{{ ph.new_price|floatformat:0 }}</span>
+                <br><span class="text-muted">{{ ph.changed_at|date:"d M Y" }} by {{ ph.changed_by.get_full_name|default:ph.changed_by.username }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% if location_prices %}
+        <div class="card">
+            <div class="card-title">Location Prices</div>
+            {% for lp in location_prices %}
+            <div style="padding:6px 0;border-bottom:1px solid var(--card-border);">
+                <strong>{{ lp.location.name }}</strong>: <span class="text-teal">{{ lp.price|floatformat:0 }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

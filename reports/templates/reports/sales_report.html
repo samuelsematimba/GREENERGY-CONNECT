@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Sales Report — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Sales Report</h1><p>All transactions with revenue totals, customers and agents</p></div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export_csv' 'sales' %}?date_from={{ date_from }}&date_to={{ date_to }}" class="btn btn-outline">⬇ Export CSV</a>
+        <a href="{% url 'reports:home' %}" class="btn btn-outline">← Reports</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Sales</div>
+        <div class="stat-value">{{ totals.count|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-value">{{ totals.revenue|floatformat:0|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Total Collected</div>
+        <div class="stat-value" style="color:var(--success);">{{ totals.paid|floatformat:0|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Outstanding Balance</div>
+        <div class="stat-value" style="color:var(--warning);">
+            {% if totals.revenue and totals.paid %}{{ totals.revenue|add:"-"|add:totals.paid|floatformat:0 }}{% else %}0{% endif %}
+        </div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Customer name, NIN or Sale Ref…">
+    <input type="date" name="date_from" value="{{ date_from }}" title="From date">
+    <input type="date" name="date_to" value="{{ date_to }}" title="To date">
+    <select name="country">
+        <option value="">All Countries</option>
+        {% for c in countries %}<option value="{{ c.id }}" {% if country_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="location">
+        <option value="">All Outlets</option>
+        {% for l in locations %}<option value="{{ l.id }}" {% if location_id == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>{% endfor %}
+    </select>
+    <select name="payment">
+        <option value="">All Payments</option>
+        <option value="cash" {% if payment == 'cash' %}selected{% endif %}>Cash</option>
+        <option value="mobile_money" {% if payment == 'mobile_money' %}selected{% endif %}>Mobile Money</option>
+        <option value="credit" {% if payment == 'credit' %}selected{% endif %}>Credit</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'reports:sales_report' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Sale Ref</th><th>Date</th><th>Customer</th><th>NIN</th><th>Outlet</th><th>Agent</th><th>Payment</th><th>Total</th><th>Paid</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for s in sales %}
+            <tr>
+                <td><strong class="text-teal">{{ s.sale_ref }}</strong></td>
+                <td class="text-muted">{{ s.sale_date|date:"d M Y H:i" }}</td>
+                <td><strong>{{ s.customer.full_name }}</strong><br><span class="text-muted" style="font-size:12px;">{{ s.customer.phone_number }}</span></td>
+                <td><span class="chip">{{ s.customer.nin }}</span></td>
+                <td>{{ s.outlet.name }}</td>
+                <td>{{ s.agent.get_full_name|default:"—" }}</td>
+                <td>
+                    {% if s.payment_method == 'cash' %}<span class="badge badge-green">Cash</span>
+                    {% elif s.payment_method == 'mobile_money' %}<span class="badge badge-teal">Mobile Money</span>
+                    {% else %}<span class="badge badge-yellow">Credit</span>{% endif %}
+                </td>
+                <td><strong>{{ s.total_amount }}</strong></td>
+                <td>{{ s.amount_paid }}</td>
+                <td>
+                    {% if s.status == 'completed' %}<span class="badge badge-green">Completed</span>
+                    {% elif s.status == 'pending_payment' %}<span class="badge badge-yellow">Pending</span>
+                    {% else %}<span class="badge badge-red">Cancelled</span>{% endif %}
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="10" style="text-align:center;color:var(--muted);padding:32px;">No sales match your filters.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

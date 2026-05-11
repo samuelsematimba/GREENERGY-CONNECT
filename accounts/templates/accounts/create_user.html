@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Create User{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Create User</h1><p>Add a new user to the system</p></div>
+    <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST">{% csrf_token %}
+        <div class="form-row">
+            <div class="form-group"><label>First Name</label><input type="text" name="first_name" required placeholder="First name"></div>
+            <div class="form-group"><label>Last Name</label><input type="text" name="last_name" required placeholder="Last name"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Username</label><input type="text" name="username" required placeholder="Unique username (no spaces)"></div>
+            <div class="form-group"><label>Email</label><input type="email" name="email" placeholder="Email address"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Phone Number</label><input type="text" name="phone_number" placeholder="+256 or +255..."></div>
+            <div class="form-group"><label>Password</label><input type="password" name="password" required placeholder="Min 8 characters"></div>
+        </div>
+        <div class="form-row-3">
+            <div class="form-group"><label>Role</label>
+                <select name="role" required>
+                    <option value="">Select role…</option>
+                    {% for r in roles %}<option value="{{ r.id }}">{{ r }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group"><label>Country</label>
+                <select name="country" id="countrySelect">
+                    <option value="">Select country…</option>
+                    {% for c in countries %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+                </select>
+            </div>
+            <div class="form-group"><label>Location / Branch</label>
+                <select name="location">
+                    <option value="">Select location…</option>
+                    {% for l in locations %}<option value="{{ l.id }}">{{ l.name }} ({{ l.get_location_type_display }})</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Create User</button>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

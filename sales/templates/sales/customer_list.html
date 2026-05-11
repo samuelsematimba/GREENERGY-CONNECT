@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Customers{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Customers</h1><p>All registered customers</p></div>
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search name, NIN, phone…">
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a href="{% url 'sales:customer_list' %}" class="btn btn-outline">Clear</a>
+</form>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Full Name</th><th>NIN</th><th>Phone</th><th>Village</th><th>District</th><th>Registered</th><th>Sales</th></tr></thead>
+        <tbody>
+        {% for c in customers %}
+        <tr>
+            <td><strong>{{ c.full_name }}</strong></td>
+            <td><code>{{ c.nin }}</code></td>
+            <td>{{ c.phone_number }}</td>
+            <td>{{ c.village|default:"—" }}</td>
+            <td>{{ c.district|default:"—" }}</td>
+            <td class="text-muted">{{ c.created_at|date:"d M Y" }}</td>
+            <td>{{ c.sales.count }}</td>
+        </tr>
+        {% empty %}<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No customers found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

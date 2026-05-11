@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Sign Off Reconciliation — {{ recon.ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Sign Off — {{ recon.ref }}</h1><p>Final accountant sign-off to close this reconciliation period</p></div>
+    <a href="{% url 'reconciliation:bo_recon_list' %}" class="btn btn-outline">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div>
+        <div class="card">
+            <div class="card-title">Reconciliation Summary</div>
+            <table style="width:100%;font-size:14px;">
+                <tr><td style="color:var(--muted);padding:8px 0;">Reference</td><td><strong class="text-teal">{{ recon.ref }}</strong></td></tr>
+                <tr><td style="color:var(--muted);padding:8px 0;">Back Office Officer</td><td>{{ recon.backoffice_officer.get_full_name|default:"—" }}</td></tr>
+                <tr><td style="color:var(--muted);padding:8px 0;">Period</td><td>{{ recon.period_start }} — {{ recon.period_end }}</td></tr>
+                <tr><td style="color:var(--muted);padding:8px 0;">Total from Outlets</td><td><strong>{{ recon.total_from_outlets }}</strong></td></tr>
+                <tr><td style="color:var(--muted);padding:8px 0;">Bank Confirmed</td><td><strong>{{ recon.bank_confirmed_amount }}</strong></td></tr>
+                <tr>
+                    <td style="color:var(--muted);padding:8px 0;">Discrepancy</td>
+                    <td>
+                        {% if recon.discrepancy_amount == 0 %}
+                        <span class="badge badge-green">Balanced — 0</span>
+                        {% elif recon.discrepancy_amount > 0 %}
+                        <span style="color:var(--success);">+{{ recon.discrepancy_amount }}</span>
+                        {% else %}
+                        <span style="color:var(--danger);">{{ recon.discrepancy_amount }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr><td style="color:var(--muted);padding:8px 0;">Current Status</td><td><span class="badge badge-yellow">{{ recon.get_status_display }}</span></td></tr>
+            </table>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Included Outlet Reconciliations</div>
+            {% for r in recon.outlet_reconciliations.all %}
+            <div style="padding:10px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:8px;border:1px solid var(--card-border);">
+                <div style="display:flex;justify-content:space-between;">
+                    <strong class="text-teal">{{ r.ref }}</strong>
+                    <span class="badge badge-green">Closed</span>
+                </div>
+                <div class="text-muted" style="font-size:12px;margin-top:4px;">{{ r.outlet.name }} | {{ r.period_start }} – {{ r.period_end }} | Collected: {{ r.total_collected }}</div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No outlet reconciliations linked.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div>
+        <div class="card" style="border-color:rgba(0,184,169,0.4);">
+            <div class="card-title">Accountant Sign-Off</div>
+            <p class="text-muted" style="font-size:13px;margin-bottom:20px;line-height:1.6;">
+                By signing off, you confirm that you have reviewed the back-office reconciliation against bank statements and all figures are verified.
+                This action will <strong style="color:var(--white);">lock the reconciliation period</strong> and cannot be undone.
+            </p>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label>Sign-Off Notes</label>
+                    <textarea name="notes" placeholder="Add any notes, observations or references (bank statement ref, etc.)…" style="min-height:120px;"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;font-size:15px;padding:12px;">
+                    ✅ Confirm Sign-Off & Close Period
+                </button>
+            </form>
+        </div>
+        <div class="card">
+            <div class="card-title">⚠ Important</div>
+            <p class="text-muted" style="font-size:13px;line-height:1.7;">
+                Once you sign off, the system will generate a Reconciliation Closure record.
+                All outlet reconciliations included in this batch are permanently closed.
+                Any future discrepancies discovered after sign-off must be handled via a new reconciliation cycle.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

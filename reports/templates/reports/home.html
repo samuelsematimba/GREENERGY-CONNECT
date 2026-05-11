@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Reports — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Reports</h1>
+    <p>Unified reporting across all system modules with filters and export</p>
+</div>
+
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px;">
+
+    <a href="{% url 'reports:user_report' %}" style="text-decoration:none;">
+        <div class="card" style="border-color:rgba(0,184,169,0.35);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:36px;margin-bottom:12px;">👥</div>
+            <div class="card-title">User Report</div>
+            <p class="text-muted">All system users, roles, countries, locations and activity. Filter by role or status.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'reports:product_report' %}" style="text-decoration:none;">
+        <div class="card" style="border-color:rgba(0,184,169,0.35);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:36px;margin-bottom:12px;">📦</div>
+            <div class="card-title">Product Report</div>
+            <p class="text-muted">Full product catalogue, serialized item statuses, price history and availability by country.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'reports:stock_report' %}" style="text-decoration:none;">
+        <div class="card" style="border-color:rgba(0,184,169,0.35);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:36px;margin-bottom:12px;">🏭</div>
+            <div class="card-title">Stock Report</div>
+            <p class="text-muted">Current stock levels at warehouses and outlets, in-transit items, write-offs and movements.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'reports:sales_report' %}" style="text-decoration:none;">
+        <div class="card" style="border-color:rgba(0,184,169,0.35);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:36px;margin-bottom:12px;">💹</div>
+            <div class="card-title">Sales Report</div>
+            <p class="text-muted">All sales transactions with revenue totals, customer details, agents and payment methods.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'reports:reconciliation_report' %}" style="text-decoration:none;">
+        <div class="card" style="border-color:rgba(0,184,169,0.35);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:36px;margin-bottom:12px;">🔄</div>
+            <div class="card-title">Reconciliation Report</div>
+            <p class="text-muted">Agent collections, outlet reconciliations and back-office sign-offs with discrepancy tracking.</p>
+        </div>
+    </a>
+
+    <a href="{% url 'reports:audit_log' %}" style="text-decoration:none;">
+        <div class="card" style="border-color:rgba(0,184,169,0.35);cursor:pointer;transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="font-size:36px;margin-bottom:12px;">🔍</div>
+            <div class="card-title">Audit Log</div>
+            <p class="text-muted">Complete tamper-proof log of all system actions — who did what, when, and to which record.</p>
+        </div>
+    </a>
+
+</div>
+
+<div class="card mt-16">
+    <div class="card-title">Quick Exports</div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export_csv' 'sales' %}" class="btn btn-outline">⬇ Export Sales CSV</a>
+        <a href="{% url 'reports:export_csv' 'stock' %}" class="btn btn-outline">⬇ Export Stock CSV</a>
+        <a href="{% url 'reports:export_csv' 'users' %}" class="btn btn-outline">⬇ Export Users CSV</a>
+        <a href="{% url 'reports:export_csv' 'reconciliation' %}" class="btn btn-outline">⬇ Export Recon CSV</a>
+    </div>
+</div>
+{% endblock %}

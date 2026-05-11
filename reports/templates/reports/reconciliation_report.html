@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Reconciliation Report — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Reconciliation Report</h1><p>Agent collections, outlet recons and back-office sign-offs</p></div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export_csv' 'reconciliation' %}" class="btn btn-outline">⬇ Export CSV</a>
+        <a href="{% url 'reports:home' %}" class="btn btn-outline">← Reports</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Agent Collections (Recent)</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Ref</th><th>Agent</th><th>Outlet</th><th>Period</th><th>Cash</th><th>Mobile</th><th>System Expected</th><th>Discrepancy</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for col in agent_cols %}
+                <tr>
+                    <td><strong class="text-teal">{{ col.ref }}</strong></td>
+                    <td>{{ col.agent.get_full_name|default:col.agent.username }}</td>
+                    <td>{{ col.outlet.name }}</td>
+                    <td class="text-muted">{{ col.period_start }} – {{ col.period_end }}</td>
+                    <td>{{ col.cash_amount }}</td>
+                    <td>{{ col.mobile_money_amount }}</td>
+                    <td>{{ col.system_expected }}</td>
+                    <td>
+                        {% if col.discrepancy_amount == 0 %}<span class="text-teal">0</span>
+                        {% elif col.discrepancy_amount > 0 %}<span style="color:var(--success);">+{{ col.discrepancy_amount }}</span>
+                        {% else %}<span style="color:var(--danger);">{{ col.discrepancy_amount }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if col.status == 'balanced' %}<span class="badge badge-green">Balanced</span>
+                        {% elif col.status == 'discrepancy' %}<span class="badge badge-red">Discrepancy</span>
+                        {% elif col.status == 'closed' %}<span class="badge badge-teal">Closed</span>
+                        {% else %}<span class="badge badge-yellow">{{ col.get_status_display }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">No agent collections.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <select name="status">
+        <option value="">All Outlet Recon Statuses</option>
+        <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+        <option value="submitted" {% if status_filter == 'submitted' %}selected{% endif %}>Submitted</option>
+        <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+        <option value="discrepancy" {% if status_filter == 'discrepancy' %}selected{% endif %}>Discrepancy</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'reports:reconciliation_report' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="card">
+    <div class="card-title">Outlet Reconciliations</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Ref</th><th>Outlet</th><th>Manager</th><th>Period</th><th>System Sales</th><th>Collected</th><th>Discrepancy</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                {% for r in outlet_recons %}
+                <tr>
+                    <td><strong class="text-teal">{{ r.ref }}</strong></td>
+                    <td>{{ r.outlet.name }}</td>
+                    <td>{{ r.outlet_manager.get_full_name|default:"—" }}</td>
+                    <td class="text-muted">{{ r.period_start }} – {{ r.period_end }}</td>
+                    <td>{{ r.total_sales_system }}</td>
+                    <td>{{ r.total_collected }}</td>
+                    <td>
+                        {% if r.discrepancy_amount == 0 %}<span class="text-teal">0</span>
+                        {% elif r.discrepancy_amount > 0 %}<span style="color:var(--success);">+{{ r.discrepancy_amount }}</span>
+                        {% else %}<span style="color:var(--danger);">{{ r.discrepancy_amount }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if r.status == 'closed' %}<span class="badge badge-green">Closed</span>
+                        {% elif r.status == 'discrepancy' %}<span class="badge badge-red">Discrepancy</span>
+                        {% elif r.status == 'submitted' %}<span class="badge badge-teal">Submitted</span>
+                        {% else %}<span class="badge badge-yellow">{{ r.get_status_display }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:24px;">No outlet reconciliations.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Back-Office Sign-Offs</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Ref</th><th>Back Office Officer</th><th>Accountant</th><th>Period</th><th>From Outlets</th><th>Bank Confirmed</th><th>Discrepancy</th><th>Status</th><th>Signed Off</th></tr>
+            </thead>
+            <tbody>
+                {% for b in bo_recons %}
+                <tr>
+                    <td><strong class="text-teal">{{ b.ref }}</strong></td>
+                    <td>{{ b.backoffice_officer.get_full_name|default:"—" }}</td>
+                    <td>{{ b.accountant.get_full_name|default:"Pending" }}</td>
+                    <td class="text-muted">{{ b.period_start }} – {{ b.period_end }}</td>
+                    <td>{{ b.total_from_outlets }}</td>
+                    <td>{{ b.bank_confirmed_amount }}</td>
+                    <td>
+                        {% if b.discrepancy_amount == 0 %}<span class="text-teal">0</span>
+                        {% elif b.discrepancy_amount > 0 %}<span style="color:var(--success);">+{{ b.discrepancy_amount }}</span>
+                        {% else %}<span style="color:var(--danger);">{{ b.discrepancy_amount }}</span>{% endif %}
+                    </td>
+                    <td>
+                        {% if b.status == 'signed_off' %}<span class="badge badge-green">Signed Off</span>
+                        {% elif b.status == 'submitted' %}<span class="badge badge-teal">Submitted</span>
+                        {% else %}<span class="badge badge-yellow">{{ b.get_status_display }}</span>{% endif %}
+                    </td>
+                    <td class="text-muted">{{ b.signed_off_at|date:"d M Y"|default:"—" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">No back-office reconciliations.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

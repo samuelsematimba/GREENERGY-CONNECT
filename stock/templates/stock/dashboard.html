@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Stock Levels{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Stock Levels</h1><p>{% if location %}{{ location.name }}{% else %}All Locations{% endif %}</p></div>
+    <div class="btn-group">
+        <a href="{% url 'stock:create_grn' %}" class="btn btn-outline">📥 Receive Stock</a>
+        <a href="{% url 'stock:create_request' %}" class="btn btn-primary">📋 Request Stock</a>
+    </div>
+</div>
+
+{% if non_serialized %}
+<div class="card">
+    <div class="card-title">Non-Serialized Stock</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Product</th><th>SKU</th>{% if not location %}<th>Location</th>{% endif %}<th>Quantity</th><th>Last Updated</th></tr></thead>
+            <tbody>
+            {% for sl in non_serialized %}
+            <tr>
+                <td><strong>{{ sl.product.name }}</strong></td>
+                <td><code>{{ sl.product.sku }}</code></td>
+                {% if not location %}<td>{{ sl.location.name }}</td>{% endif %}
+                <td><strong style="color:{% if sl.quantity < 5 %}var(--danger){% elif sl.quantity < 20 %}var(--warning){% else %}var(--success){% endif %};">{{ sl.quantity }} {{ sl.product.get_unit_display }}</strong></td>
+                <td class="text-muted">{{ sl.updated_at|date:"d M Y H:i" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if serialized %}
+<div class="card">
+    <div class="card-title">Serialized Items In Stock ({{ serialized|length }})</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Serial Number</th><th>Product</th>{% if not location %}<th>Location</th>{% endif %}<th>Status</th></tr></thead>
+            <tbody>
+            {% for item in serialized %}
+            <tr>
+                <td><code>{{ item.serial_number }}</code></td>
+                <td>{{ item.product.name }}</td>
+                {% if not location %}<td>{{ item.current_location|default:"—" }}</td>{% endif %}
+                <td><span class="badge badge-green">In Stock</span></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if in_transit %}
+<div class="card">
+    <div class="card-title">In Transit to {% if location %}{{ location.name }}{% else %}All Locations{% endif %}</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Transfer Ref</th><th>From</th><th>Items</th><th>Dispatch Date</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for t in in_transit %}
+            <tr>
+                <td><strong>{{ t.transfer_ref }}</strong></td>
+                <td>{{ t.from_location.name }}</td>
+                <td>{{ t.items.count }} line(s)</td>
+                <td>{{ t.dispatch_date|date:"d M Y" }}</td>
+                <td><a href="{% url 'stock:confirm_receipt' t.pk %}" class="btn btn-primary btn-sm">Confirm Receipt</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if not non_serialized and not serialized and not in_transit %}
+<div class="card" style="text-align:center;padding:48px;">
+    <p class="text-muted" style="font-size:16px;">No stock data available for this location.</p>
+    <div class="btn-group" style="justify-content:center;margin-top:16px;">
+        <a href="{% url 'stock:create_grn' %}" class="btn btn-primary">Receive First Stock</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

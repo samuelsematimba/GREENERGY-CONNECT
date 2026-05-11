@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Locations{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Locations</h1><p>Manage warehouses, outlets and offices</p></div>
+    <a href="{% url 'accounts:create_location' %}" class="btn btn-primary">+ Add Location</a>
+</div>
+<form method="get" class="filter-bar">
+    <select name="country"><option value="">All Countries</option>
+        {% for c in countries %}<option value="{{ c.id }}">{{ c.name }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+</form>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Name</th><th>Type</th><th>Country</th><th>Affiliated Warehouse</th><th>Status</th></tr></thead>
+        <tbody>
+        {% for loc in locations %}
+        <tr>
+            <td><strong>{{ loc.name }}</strong><br><span class="text-muted">{{ loc.address|truncatechars:50 }}</span></td>
+            <td><span class="badge {% if loc.location_type == 'warehouse' %}badge-teal{% elif loc.location_type == 'outlet' %}badge-green{% else %}badge-gray{% endif %}">{{ loc.get_location_type_display }}</span></td>
+            <td>{{ loc.country.name }}</td>
+            <td>{{ loc.affiliated_warehouse.name|default:"—" }}</td>
+            <td><span class="badge {% if loc.is_active %}badge-green{% else %}badge-red{% endif %}">{% if loc.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+        </tr>
+        {% empty %}<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px;">No locations found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

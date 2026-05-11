@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Audit Log — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Audit Log</h1><p>Complete tamper-proof record of all system actions</p></div>
+    <a href="{% url 'reports:home' %}" class="btn btn-outline">← Reports</a>
+</div>
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search by action or username…">
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a href="{% url 'reports:audit_log' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Timestamp</th><th>User</th><th>Action</th><th>Model</th><th>Record ID</th><th>IP Address</th></tr>
+        </thead>
+        <tbody>
+            {% for log in logs %}
+            <tr>
+                <td class="text-muted" style="white-space:nowrap;">{{ log.timestamp|date:"d M Y H:i:s" }}</td>
+                <td><strong class="text-teal">{{ log.user.username|default:"System" }}</strong></td>
+                <td>{{ log.action }}</td>
+                <td>{% if log.model_name %}<span class="chip">{{ log.model_name }}</span>{% else %}—{% endif %}</td>
+                <td>{% if log.object_id %}<span class="chip">{{ log.object_id }}</span>{% else %}—{% endif %}</td>
+                <td class="text-muted">{{ log.ip_address|default:"—" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:32px;">No audit log entries found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<p class="text-muted mt-8" style="font-size:12px;">Showing the 200 most recent entries. Use search to find specific records.</p>
+{% endblock %}

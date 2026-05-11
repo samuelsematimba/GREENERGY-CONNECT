@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Products</h1><p>Serialized and non-serialized product catalogue</p></div>
+    <a href="{% url 'products:create_product' %}" class="btn btn-primary">+ New Product</a>
+</div>
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search product name…">
+    <select name="category"><option value="">All Categories</option>
+        {% for c in categories %}<option value="{{ c.id }}" {% if category_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="type"><option value="">All Types</option>
+        <option value="serialized" {% if ptype == "serialized" %}selected{% endif %}>Serialized</option>
+        <option value="non_serialized" {% if ptype == "non_serialized" %}selected{% endif %}>Non-Serialized</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'products:product_list' %}" class="btn btn-outline">Clear</a>
+    <a href="{% url 'products:combo_list' %}" class="btn btn-outline">🎁 Combos</a>
+</form>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Product</th><th>SKU</th><th>Type</th><th>Category</th><th>Base Price</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for p in products %}
+        <tr>
+            <td><strong>{{ p.name }}</strong>{% if p.description %}<br><span class="text-muted">{{ p.description|truncatechars:50 }}</span>{% endif %}</td>
+            <td><code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:12px;">{{ p.sku }}</code></td>
+            <td><span class="badge {% if p.product_type == 'serialized' %}badge-teal{% else %}badge-yellow{% endif %}">{{ p.get_product_type_display }}</span></td>
+            <td>{{ p.category|default:"—" }}</td>
+            <td>{{ p.base_price|floatformat:0 }}</td>
+            <td><span class="badge {% if p.is_active %}badge-green{% else %}badge-red{% endif %}">{% if p.is_active %}Active{% else %}Inactive{% endif %}</span></td>
+            <td><a href="{% url 'products:product_detail' p.pk %}" class="btn btn-outline btn-sm">View</a></td>
+        </tr>
+        {% empty %}<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No products found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Dispatch — {{ req.request_ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Dispatch Transfer — {{ req.request_ref }}</h1><p>{{ req.warehouse.name }} → {{ req.outlet.name }}</p></div>
+    <a href="{% url 'stock:request_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:800px;">
+    <form method="POST">{% csrf_token %}
+        {% for item in req.items.all %}
+        <div class="card" style="padding:16px;margin-bottom:12px;">
+            <strong>{{ item.product.name }}</strong> — Approved: {{ item.quantity_approved }}
+            {% if item.product.product_type == 'serialized' %}
+            <div class="form-group" style="margin-top:10px;">
+                <label>Scan / Enter Serial Numbers (one per line)</label>
+                <textarea name="serials_{{ item.id }}" rows="6" placeholder="SB-00001&#10;SB-00002&#10;One per line — must be in stock at this warehouse"></textarea>
+            </div>
+            {% endif %}
+        </div>
+        {% endfor %}
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">🚚 Confirm Dispatch</button>
+            <a href="{% url 'stock:request_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

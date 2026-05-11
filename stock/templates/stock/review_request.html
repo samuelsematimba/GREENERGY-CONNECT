@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}Review Request — {{ req.request_ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Review Request — {{ req.request_ref }}</h1><p>{{ req.outlet.name }} → {{ req.warehouse.name }}</p></div>
+    <a href="{% url 'stock:request_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div><span class="text-muted">Requested By</span><br><strong>{{ req.requested_by.get_full_name|default:req.requested_by.username }}</strong></div>
+        <div><span class="text-muted">Date</span><br><strong>{{ req.request_date|date:"d M Y H:i" }}</strong></div>
+        <div><span class="text-muted">Status</span><br><span class="badge badge-yellow">{{ req.get_status_display }}</span></div>
+    </div>
+    {% if req.notes %}<p class="text-muted" style="margin-bottom:16px;">Notes: {{ req.notes }}</p>{% endif %}
+    <div class="divider"></div>
+    <form method="POST">{% csrf_token %}
+        <div class="table-wrap" style="margin-bottom:20px;">
+            <table>
+                <thead><tr><th>Product</th><th>Requested</th><th>Approve Qty</th></tr></thead>
+                <tbody>
+                {% for item in req.items.all %}
+                <tr>
+                    <td><strong>{{ item.product.name }}</strong></td>
+                    <td>{{ item.quantity_requested }}</td>
+                    <td><input type="number" name="approved_{{ item.id }}" value="{{ item.quantity_requested }}" min="0" max="{{ item.quantity_requested }}" style="width:100px;"></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="form-group">
+            <label>Rejection Reason (if rejecting)</label>
+            <textarea name="rejection_reason" placeholder="Required only when rejecting…"></textarea>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" name="action" value="approve" class="btn btn-primary">✓ Approve</button>
+            <button type="submit" name="action" value="reject" class="btn btn-danger">✗ Reject</button>
+            <a href="{% url 'stock:request_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

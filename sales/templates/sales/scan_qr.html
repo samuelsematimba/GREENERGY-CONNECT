@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Scan QR{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Scan QR / Lookup Serial</h1><p>Find a serialized item before processing a sale</p></div>
+<div class="card" style="max-width:500px;">
+    <form method="POST">{% csrf_token %}
+        <div class="form-group"><label>Serial Number</label><input type="text" name="serial" placeholder="Scan QR or type serial number" autofocus style="text-transform:uppercase;" {% if serial %}value="{{ serial }}"{% endif %}></div>
+        <button type="submit" class="btn btn-primary">Lookup Item</button>
+    </form>
+    {% if item %}
+    <div class="divider"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div><span class="text-muted">Product</span><br><strong>{{ item.product.name }}</strong></div>
+        <div><span class="text-muted">Serial</span><br><code>{{ item.serial_number }}</code></div>
+        <div><span class="text-muted">Status</span><br>
+            <span class="badge {% if item.status == 'in_stock' %}badge-green{% elif item.status == 'sold' %}badge-gray{% else %}badge-yellow{% endif %}">{{ item.get_status_display }}</span>
+        </div>
+        <div><span class="text-muted">Location</span><br>{{ item.current_location|default:"—" }}</div>
+    </div>
+    {% if item.status == 'in_stock' %}
+    <div class="mt-16">
+        <a href="{% url 'sales:create_sale' %}" class="btn btn-primary">→ Use in New Sale</a>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+{% endblock %}

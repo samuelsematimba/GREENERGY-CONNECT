@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}New Combo{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Create Combo</h1><p>Bundle products with a combined price</p></div>
+    <a href="{% url 'products:combo_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST" id="comboForm">{% csrf_token %}
+        <div class="form-row">
+            <div class="form-group"><label>Combo Name</label><input type="text" name="name" required placeholder="e.g. Starter Kit"></div>
+            <div class="form-group"><label>Combo Code</label><input type="text" name="code" required placeholder="e.g. COMBO-001"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Combo Price</label><input type="number" name="price" required placeholder="0" step="0.01"></div>
+            <div class="form-group"><label>Available Countries</label>
+                <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:6px;">
+                    {% for c in countries %}<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;">
+                        <input type="checkbox" name="countries" value="{{ c.id }}" style="width:auto;"> {{ c.name }}
+                    </label>{% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea name="description" placeholder="Optional…"></textarea></div>
+        <div class="divider"></div>
+        <div class="card-title">Combo Items</div>
+        <div id="comboItems">
+            <div class="combo-item form-row" style="margin-bottom:10px;">
+                <div class="form-group"><label>Product</label>
+                    <select name="product_ids"><option value="">Select product…</option>
+                        {% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-group"><label>Quantity</label><input type="number" name="quantities" min="1" value="1"></div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addItem()">+ Add Another Item</button>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Create Combo</button>
+            <a href="{% url 'products:combo_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+const productsHtml = `{% for p in products %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}`;
+function addItem() {
+    const div = document.createElement('div');
+    div.className = 'combo-item form-row';
+    div.style.marginBottom = '10px';
+    div.innerHTML = `<div class="form-group"><label>Product</label><select name="product_ids"><option value="">Select product…</option>${productsHtml}</select></div><div class="form-group"><label>Quantity</label><input type="number" name="quantities" min="1" value="1"></div>`;
+    document.getElementById('comboItems').appendChild(div);
+}
+</script>
+{% endblock %}

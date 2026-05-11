@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Stock Report — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Stock Report</h1><p>Stock levels, movements, in-transit items and write-offs</p></div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export_csv' 'stock' %}" class="btn btn-outline">⬇ Export CSV</a>
+        <a href="{% url 'reports:home' %}" class="btn btn-outline">← Reports</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <select name="country">
+        <option value="">All Countries</option>
+        {% for c in countries %}<option value="{{ c.id }}" {% if country_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="location">
+        <option value="">All Locations</option>
+        {% for l in locations %}<option value="{{ l.id }}" {% if location_id == l.id|stringformat:"s" %}selected{% endif %}>{{ l.name }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'reports:stock_report' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="card">
+    <div class="card-title">Non-Serialized Stock Levels</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Product</th><th>SKU</th><th>Location</th><th>Country</th><th>Qty on Hand</th></tr></thead>
+            <tbody>
+                {% for sl in stock_levels %}
+                <tr>
+                    <td><strong>{{ sl.product.name }}</strong></td>
+                    <td><span class="chip">{{ sl.product.sku }}</span></td>
+                    <td>{{ sl.location.name }}</td>
+                    <td>{{ sl.location.country.name }}</td>
+                    <td><strong class="text-teal">{{ sl.quantity }}</strong> {{ sl.product.unit }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No stock records.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Serialized Items Registry</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Serial Number</th><th>Product</th><th>Current Location</th><th>Country</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for si in serialized %}
+                <tr>
+                    <td><strong class="text-teal">{{ si.serial_number }}</strong></td>
+                    <td>{{ si.product.name }}</td>
+                    <td>{{ si.current_location|default:"—" }}</td>
+                    <td>{{ si.current_location.country.name|default:"—" }}</td>
+                    <td>
+                        {% if si.status == 'in_stock' %}<span class="badge badge-green">In Stock</span>
+                        {% elif si.status == 'in_transit' %}<span class="badge badge-yellow">In Transit</span>
+                        {% elif si.status == 'sold' %}<span class="badge badge-teal">Sold</span>
+                        {% elif si.status == 'faulty' %}<span class="badge badge-red">Faulty</span>
+                        {% else %}<span class="badge badge-gray">{{ si.get_status_display }}</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No serialized items.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">In-Transit Stock</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Transfer Ref</th><th>From</th><th>To</th><th>Dispatched</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for t in in_transit %}
+                <tr>
+                    <td><strong class="text-teal">{{ t.transfer_ref }}</strong></td>
+                    <td>{{ t.from_location.name }}</td>
+                    <td>{{ t.to_location.name }}</td>
+                    <td>{{ t.dispatch_date|date:"d M Y H:i" }}</td>
+                    <td><span class="badge badge-yellow">{{ t.get_status_display }}</span></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No items in transit.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Recent Write-Offs</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Product</th><th>Location</th><th>Qty</th><th>Reason</th><th>Approved By</th><th>Date</th></tr></thead>
+            <tbody>
+                {% for wo in write_offs %}
+                <tr>
+                    <td>{{ wo.product.name }}</td>
+                    <td>{{ wo.location.name }}</td>
+                    <td class="text-teal">{{ wo.quantity }}</td>
+                    <td><span class="badge badge-red">{{ wo.get_reason_display }}</span></td>
+                    <td>{{ wo.approved_by.get_full_name|default:"—" }}</td>
+                    <td class="text-muted">{{ wo.date|date:"d M Y" }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No write-offs recorded.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

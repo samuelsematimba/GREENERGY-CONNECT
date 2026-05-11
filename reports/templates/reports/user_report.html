@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}User Report — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <h1>User Report</h1>
+        <p>{{ total }} user{{ total|pluralize }} found</p>
+    </div>
+    <div class="btn-group">
+        <a href="{% url 'reports:export_csv' 'users' %}" class="btn btn-outline">⬇ Export CSV</a>
+        <a href="{% url 'reports:home' %}" class="btn btn-outline">← Reports</a>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <select name="country">
+        <option value="">All Countries</option>
+        {% for c in countries %}<option value="{{ c.id }}" {% if country_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <select name="role">
+        <option value="">All Roles</option>
+        {% for r in roles %}<option value="{{ r.id }}" {% if role_id == r.id|stringformat:"s" %}selected{% endif %}>{{ r }}</option>{% endfor %}
+    </select>
+    <select name="status">
+        <option value="">All Statuses</option>
+        <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+        <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'reports:user_report' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Country</th>
+                <th>Location</th>
+                <th>Status</th>
+                <th>Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for up in users %}
+            <tr>
+                <td><strong class="text-teal">{{ up.user.username }}</strong></td>
+                <td>{{ up.full_name }}</td>
+                <td>{{ up.user.email|default:"—" }}</td>
+                <td>
+                    {% if up.role %}
+                    <span class="badge badge-teal">{{ up.role }}</span>
+                    {% else %}<span class="text-muted">—</span>{% endif %}
+                </td>
+                <td>{{ up.country|default:"—" }}</td>
+                <td>{{ up.location|default:"—" }}</td>
+                <td>
+                    {% if up.is_active %}
+                    <span class="badge badge-green">Active</span>
+                    {% else %}
+                    <span class="badge badge-red">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="text-muted">{{ up.created_at|date:"d M Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">No users match your filters.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

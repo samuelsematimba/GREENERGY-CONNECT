@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Reconciliation{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Reconciliation Dashboard</h1><p>Multi-level financial reconciliation</p></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px;">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">💰</div>
+        <div class="card-title" style="justify-content:center;">Level 1 — Agent Collections</div>
+        <p class="text-muted">Agents submit daily collections to outlet manager</p>
+        <div class="btn-group" style="justify-content:center;margin-top:12px;">
+            <a href="{% url 'reconciliation:submit_collection' %}" class="btn btn-primary btn-sm">Submit</a>
+            <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline btn-sm">View</a>
+        </div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">🏪</div>
+        <div class="card-title" style="justify-content:center;">Level 2 — Outlet Reconciliation</div>
+        <p class="text-muted">Outlet reconciles total collections with back office</p>
+        <div class="btn-group" style="justify-content:center;margin-top:12px;">
+            <a href="{% url 'reconciliation:create_outlet_recon' %}" class="btn btn-primary btn-sm">Create</a>
+            <a href="{% url 'reconciliation:outlet_recon_list' %}" class="btn btn-outline btn-sm">View</a>
+        </div>
+    </div>
+    <div class="card" style="text-align:center;">
+        <div style="font-size:32px;margin-bottom:8px;">🏦</div>
+        <div class="card-title" style="justify-content:center;">Level 3 — Back Office & Accounts</div>
+        <p class="text-muted">Back office submits consolidated report to accountant</p>
+        <div class="btn-group" style="justify-content:center;margin-top:12px;">
+            <a href="{% url 'reconciliation:create_bo_recon' %}" class="btn btn-primary btn-sm">Create</a>
+            <a href="{% url 'reconciliation:bo_recon_list' %}" class="btn btn-outline btn-sm">View</a>
+        </div>
+    </div>
+</div>
+{% if agent_collections %}<div class="card"><div class="card-title">My Recent Collections</div>
+<div class="table-wrap"><table><thead><tr><th>Ref</th><th>Period</th><th>Cash</th><th>Mobile</th><th>Expected</th><th>Status</th></tr></thead><tbody>
+{% for col in agent_collections %}<tr>
+    <td>{{ col.ref }}</td><td>{{ col.period_start }} — {{ col.period_end }}</td>
+    <td>{{ col.cash_amount|floatformat:0 }}</td><td>{{ col.mobile_money_amount|floatformat:0 }}</td>
+    <td>{{ col.system_expected|floatformat:0 }}</td>
+    <td><span class="badge {% if col.status == 'balanced' %}badge-green{% elif col.status == 'discrepancy' %}badge-red{% else %}badge-yellow{% endif %}">{{ col.get_status_display }}</span></td>
+</tr>{% endfor %}
+</tbody></table></div></div>{% endif %}
+{% endblock %}

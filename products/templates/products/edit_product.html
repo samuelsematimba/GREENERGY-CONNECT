@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Edit {{ product.name }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Edit — {{ product.name }}</h1><p>Update product information and pricing</p></div>
+    <a href="{% url 'products:product_detail' product.pk %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST" enctype="multipart/form-data">{% csrf_token %}
+        <div class="form-row">
+            <div class="form-group"><label>Product Name</label><input type="text" name="name" value="{{ product.name }}" required></div>
+            <div class="form-group"><label>Unit</label>
+                <select name="unit">
+                    {% for val, label in product.UNIT_CHOICES %}<option value="{{ val }}" {% if product.unit == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Base Price</label><input type="number" name="base_price" value="{{ product.base_price }}" required step="0.01">
+                <p class="text-muted mt-8">Changing this will log a price history entry.</p>
+            </div>
+            <div class="form-group"><label>New Image (optional)</label><input type="file" name="image" accept="image/*"></div>
+        </div>
+        <div class="form-group"><label>Description</label><textarea name="description">{{ product.description }}</textarea></div>
+        <div class="form-group"><label>Available Countries</label>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:6px;">
+                {% for c in countries %}<label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400;">
+                    <input type="checkbox" name="countries" value="{{ c.id }}" {% if c in product.countries.all %}checked{% endif %} style="width:auto;"> {{ c.name }}
+                </label>{% endfor %}
+            </div>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'products:product_detail' product.pk %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

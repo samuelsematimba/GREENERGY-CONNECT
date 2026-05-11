@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Sale {{ sale.sale_ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>{{ sale.sale_ref }}</h1><p>{{ sale.sale_date|date:"d M Y H:i" }} — {{ sale.outlet.name }}</p></div>
+    <div class="btn-group">
+        <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">← Back</a>
+    </div>
+</div>
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:20px;">
+    <div>
+        <div class="card">
+            <div class="card-title">Customer Details</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                <div><span class="text-muted">Full Name</span><br><strong>{{ sale.customer.full_name }}</strong></div>
+                <div><span class="text-muted">NIN</span><br><code>{{ sale.customer.nin }}</code></div>
+                <div><span class="text-muted">Phone</span><br><strong>{{ sale.customer.phone_number }}</strong></div>
+                <div><span class="text-muted">Gender</span><br>{{ sale.customer.get_gender_display|default:"—" }}</div>
+                <div><span class="text-muted">Village</span><br>{{ sale.customer.village|default:"—" }}</div>
+                <div><span class="text-muted">District</span><br>{{ sale.customer.district|default:"—" }}</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-title">Items Sold</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Item</th><th>Serial</th><th>Qty</th><th>Unit Price</th><th>Total</th></tr></thead>
+                    <tbody>
+                    {% for item in sale.items.all %}
+                    <tr>
+                        <td>{{ item.product.name|default:item.combo.name }}</td>
+                        <td>{% if item.serialized_item %}<code>{{ item.serialized_item.serial_number }}</code>{% else %}—{% endif %}</td>
+                        <td>{{ item.quantity }}</td>
+                        <td>{{ item.unit_price|floatformat:0 }}</td>
+                        <td><strong>{{ item.line_total|floatformat:0 }}</strong></td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="card">
+            <div class="card-title">Payment Summary</div>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+                <div class="flex-between"><span class="text-muted">Total Amount</span><strong style="font-size:20px;color:var(--teal);">{{ sale.total_amount|floatformat:0 }}</strong></div>
+                <div class="flex-between"><span class="text-muted">Amount Paid</span><strong>{{ sale.amount_paid|floatformat:0 }}</strong></div>
+                {% if sale.balance > 0 %}<div class="flex-between"><span class="text-muted">Balance</span><strong style="color:var(--warning);">{{ sale.balance|floatformat:0 }}</strong></div>{% endif %}
+                <div class="divider"></div>
+                <div class="flex-between"><span class="text-muted">Payment Method</span><span class="chip">{{ sale.get_payment_method_display }}</span></div>
+                <div class="flex-between"><span class="text-muted">Status</span>
+                    <span class="badge {% if sale.status == 'completed' %}badge-green{% elif sale.status == 'pending_payment' %}badge-yellow{% else %}badge-red{% endif %}">{{ sale.get_status_display }}</span>
+                </div>
+                <div class="flex-between"><span class="text-muted">Agent</span><span>{{ sale.agent.get_full_name|default:sale.agent.username }}</span></div>
+            </div>
+        </div>
+        {% if sale.notes %}<div class="card"><div class="card-title">Notes</div><p class="text-muted">{{ sale.notes }}</p></div>{% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Review Outlet Recon — {{ recon.ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Review — {{ recon.ref }}</h1><p>{{ recon.outlet.name }} | {{ recon.period_start }} → {{ recon.period_end }}</p></div>
+    <a href="{% url 'reconciliation:outlet_recon_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:600px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div><span class="text-muted">System Sales</span><br><strong>{{ recon.total_sales_system|floatformat:0 }}</strong></div>
+        <div><span class="text-muted">Total Collected</span><br><strong>{{ recon.total_collected|floatformat:0 }}</strong></div>
+        <div><span class="text-muted">Bank Deposit Ref</span><br>{{ recon.bank_deposit_ref|default:"—" }}</div>
+        <div><span class="text-muted">Discrepancy</span><br>
+            <strong style="color:{% if recon.discrepancy_amount == 0 %}var(--success){% else %}var(--warning){% endif %};">
+                {% if recon.discrepancy_amount > 0 %}+{% endif %}{{ recon.discrepancy_amount|floatformat:0 }}
+            </strong>
+        </div>
+    </div>
+    <form method="POST">{% csrf_token %}
+        <div class="form-group"><label>Discrepancy Notes (if applicable)</label>
+            <textarea name="discrepancy_notes" placeholder="Record any discrepancy details…"></textarea>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" name="action" value="close" class="btn btn-primary">✓ Close & Confirm</button>
+            <button type="submit" name="action" value="discrepancy" class="btn btn-danger">⚠ Flag Discrepancy</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Add Items — {{ product.name }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Add Serialized Items</h1><p>{{ product.name }} — {{ product.sku }}</p></div>
+    <a href="{% url 'products:product_detail' product.pk %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:600px;">
+    <form method="POST">{% csrf_token %}
+        <div class="form-group"><label>Starting Location</label>
+            <select name="location"><option value="">No location (assign later)</option>
+                {% for l in locations %}<option value="{{ l.id }}">{{ l.name }} ({{ l.get_location_type_display }})</option>{% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Serial Numbers</label>
+            <textarea name="serial_numbers" rows="12" placeholder="Paste one serial number per line e.g.:&#10;SB-00001&#10;SB-00002&#10;SB-00003"></textarea>
+            <p class="text-muted mt-8">One serial per line. Duplicates are automatically skipped.</p>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Add Items & Generate QR Codes</button>
+            <a href="{% url 'products:product_detail' product.pk %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

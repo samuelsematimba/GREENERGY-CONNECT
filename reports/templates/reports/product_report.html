@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Product Report — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Product Report</h1><p>Full catalogue with serialized item statuses and price history</p></div>
+    <a href="{% url 'reports:home' %}" class="btn btn-outline">← Reports</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Products</div>
+        <div class="stat-value">{{ products.count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">In Stock (Serialized)</div>
+        <div class="stat-value">{{ serialized_stats.in_stock|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">In Transit</div>
+        <div class="stat-value" style="color:var(--warning);">{{ serialized_stats.in_transit|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Sold</div>
+        <div class="stat-value" style="color:var(--success);">{{ serialized_stats.sold|default:"0" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Faulty / Written Off</div>
+        <div class="stat-value" style="color:var(--danger);">{{ serialized_stats.faulty|default:"0" }}</div>
+    </div>
+</div>
+
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search product name…">
+    <select name="type">
+        <option value="">All Types</option>
+        <option value="serialized" {% if ptype == 'serialized' %}selected{% endif %}>Serialized</option>
+        <option value="non_serialized" {% if ptype == 'non_serialized' %}selected{% endif %}>Non-Serialized</option>
+    </select>
+    <select name="country">
+        <option value="">All Countries</option>
+        {% for c in countries %}<option value="{{ c.id }}" {% if country_id == c.id|stringformat:"s" %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'reports:product_report' %}" class="btn btn-outline">Clear</a>
+</form>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr><th>Product Name</th><th>SKU</th><th>Category</th><th>Type</th><th>Base Price</th><th>Countries</th><th>Status</th></tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr>
+                <td><strong>{{ p.name }}</strong></td>
+                <td><span class="chip">{{ p.sku }}</span></td>
+                <td>{{ p.category|default:"—" }}</td>
+                <td>
+                    {% if p.product_type == 'serialized' %}
+                    <span class="badge badge-teal">Serialized</span>
+                    {% else %}
+                    <span class="badge badge-gray">Non-Serialized</span>
+                    {% endif %}
+                </td>
+                <td>{{ p.base_price }}</td>
+                <td>{% for c in p.countries.all %}{{ c.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                <td>{% if p.is_active %}<span class="badge badge-green">Active</span>{% else %}<span class="badge badge-red">Inactive</span>{% endif %}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No products found.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empower — Sign In</title>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root { --teal: #00B8A9; --ink: #0d1f1e; }
+        body { font-family: 'DM Sans', sans-serif; background: var(--ink); color: #fff; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .login-wrap { width: 100%; max-width: 420px; padding: 20px; }
+        .login-logo { text-align: center; margin-bottom: 40px; }
+        .logo-box { width: 56px; height: 56px; background: linear-gradient(135deg, var(--teal), #00e5d4); border-radius: 14px; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 24px; color: var(--ink); margin: 0 auto 14px; }
+        .login-logo h1 { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: 2px; }
+        .login-logo h1 span { color: var(--teal); }
+        .login-logo p { color: rgba(255,255,255,0.45); font-size: 13px; margin-top: 4px; }
+        .login-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(0,184,169,0.18); border-radius: 18px; padding: 36px; }
+        .form-group { margin-bottom: 18px; }
+        label { display: block; font-size: 13px; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 11px 14px; color: #fff; font-family: 'DM Sans', sans-serif; font-size: 14px; transition: border 0.2s; }
+        input:focus { outline: none; border-color: var(--teal); }
+        input::placeholder { color: rgba(255,255,255,0.25); }
+        .btn-login { width: 100%; background: var(--teal); color: var(--ink); border: none; border-radius: 8px; padding: 12px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; transition: background 0.2s; letter-spacing: 0.5px; }
+        .btn-login:hover { background: #008f84; }
+        .error-msg { background: rgba(231,76,60,0.12); border: 1px solid rgba(231,76,60,0.3); color: #e74c3c; padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+<div class="login-wrap">
+    <div class="login-logo">
+        <div class="logo-box">E</div>
+        <h1>EMPOWER <span>PLATFORM</span></h1>
+        <p>Operations Management System</p>
+    </div>
+    <div class="login-card">
+        {% if messages %}{% for m in messages %}<div class="error-msg">{{ m }}</div>{% endfor %}{% endif %}
+        <form method="POST" action="{% url 'accounts:login' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Enter your username" required autofocus>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn-login">Sign In →</button>
+        </form>
+    </div>
+</div>
+</body>
+</html>

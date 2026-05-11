@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}Edit User{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Edit User — {{ profile.full_name }}</h1><p>Update user details, role or location</p></div>
+    <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST">{% csrf_token %}
+        <div class="form-row">
+            <div class="form-group"><label>First Name</label><input type="text" name="first_name" value="{{ profile.user.first_name }}" required></div>
+            <div class="form-group"><label>Last Name</label><input type="text" name="last_name" value="{{ profile.user.last_name }}" required></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label>Email</label><input type="email" name="email" value="{{ profile.user.email }}"></div>
+            <div class="form-group"><label>Phone Number</label><input type="text" name="phone_number" value="{{ profile.phone_number }}"></div>
+        </div>
+        <div class="form-row-3">
+            <div class="form-group"><label>Role</label>
+                <select name="role">{% for r in roles %}<option value="{{ r.id }}" {% if profile.role.id == r.id %}selected{% endif %}>{{ r }}</option>{% endfor %}</select>
+            </div>
+            <div class="form-group"><label>Country</label>
+                <select name="country"><option value="">—</option>{% for c in countries %}<option value="{{ c.id }}" {% if profile.country.id == c.id %}selected{% endif %}>{{ c.name }}</option>{% endfor %}</select>
+            </div>
+            <div class="form-group"><label>Location</label>
+                <select name="location"><option value="">—</option>{% for l in locations %}<option value="{{ l.id }}" {% if profile.location.id == l.id %}selected{% endif %}>{{ l.name }}</option>{% endfor %}</select>
+            </div>
+        </div>
+        <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+                <input type="checkbox" name="is_active" {% if profile.is_active %}checked{% endif %} style="width:auto;"> Active Account
+            </label>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

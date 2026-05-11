@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Empower Platform{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <h1>Dashboard</h1>
+        <p>Welcome back, {{ user.first_name|default:user.username }}
+            {% if profile.role %} — <span class="text-teal">{{ profile.role }}</span>{% endif %}
+            {% if profile.location %} @ {{ profile.location.name }}{% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">My Role</div>
+        <div class="stat-value" style="font-size:18px;">{{ profile.role|default:"—" }}</div>
+        <div class="stat-sub">{{ profile.country|default:"No country assigned" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Location</div>
+        <div class="stat-value" style="font-size:18px;">{{ profile.location.name|default:"—" }}</div>
+        <div class="stat-sub">{{ profile.location.get_location_type_display|default:"" }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Status</div>
+        <div class="stat-value" style="font-size:18px;color:{% if profile.is_active %}var(--success){% else %}var(--danger){% endif %};">
+            {% if profile.is_active %}Active{% else %}Inactive{% endif %}
+        </div>
+        <div class="stat-sub">Account status</div>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="card">
+        <div class="card-title">Quick Actions</div>
+        <div class="btn-group" style="flex-direction:column;gap:10px;">
+            <a href="{% url 'sales:create_sale' %}" class="btn btn-primary">🛒 New Sale</a>
+            <a href="{% url 'stock:create_request' %}" class="btn btn-outline">📋 Request Stock</a>
+            <a href="{% url 'reconciliation:submit_collection' %}" class="btn btn-outline">💰 Submit Collection</a>
+            <a href="{% url 'reports:home' %}" class="btn btn-outline">📈 View Reports</a>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">System Modules</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <a href="{% url 'products:product_list' %}" class="btn btn-outline" style="justify-content:center;">📦 Products</a>
+            <a href="{% url 'stock:dashboard' %}" class="btn btn-outline" style="justify-content:center;">🏭 Stock</a>
+            <a href="{% url 'sales:sale_list' %}" class="btn btn-outline" style="justify-content:center;">📊 Sales</a>
+            <a href="{% url 'reconciliation:dashboard' %}" class="btn btn-outline" style="justify-content:center;">🔄 Recon</a>
+            <a href="{% url 'accounts:user_list' %}" class="btn btn-outline" style="justify-content:center;">👥 Users</a>
+            <a href="{% url 'accounts:locations' %}" class="btn btn-outline" style="justify-content:center;">📍 Locations</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

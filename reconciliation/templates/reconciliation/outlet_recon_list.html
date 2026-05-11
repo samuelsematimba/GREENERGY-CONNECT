@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Outlet Reconciliations{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Outlet Reconciliations</h1><p>Outlet to Back-Office reconciliation records</p></div>
+    <a href="{% url 'reconciliation:create_outlet_recon' %}" class="btn btn-primary">+ Create</a>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Ref</th><th>Outlet</th><th>Period</th><th>System Sales</th><th>Collected</th><th>Discrepancy</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for r in recons %}
+        <tr>
+            <td><strong>{{ r.ref }}</strong></td>
+            <td>{{ r.outlet.name }}</td>
+            <td>{{ r.period_start }} → {{ r.period_end }}</td>
+            <td>{{ r.total_sales_system|floatformat:0 }}</td>
+            <td>{{ r.total_collected|floatformat:0 }}</td>
+            <td><span style="color:{% if r.discrepancy_amount == 0 %}var(--success){% else %}var(--warning){% endif %};">{% if r.discrepancy_amount > 0 %}+{% endif %}{{ r.discrepancy_amount|floatformat:0 }}</span></td>
+            <td><span class="badge {% if r.status == 'closed' %}badge-green{% elif r.status == 'discrepancy' %}badge-red{% elif r.status == 'submitted' %}badge-teal{% else %}badge-yellow{% endif %}">{{ r.get_status_display }}</span></td>
+            <td>{% if r.status == 'submitted' %}<a href="{% url 'reconciliation:review_outlet_recon' r.pk %}" class="btn btn-outline btn-sm">Review</a>{% endif %}</td>
+        </tr>
+        {% empty %}<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">No outlet reconciliations yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

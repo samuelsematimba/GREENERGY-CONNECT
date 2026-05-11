@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Sales{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Sales</h1><p>All recorded sales transactions</p></div>
+    <div class="btn-group">
+        <a href="{% url 'sales:export_csv' %}{% if request.GET.urlencode %}?{{ request.GET.urlencode }}{% endif %}" class="btn btn-outline">⬇ Export CSV</a>
+        <a href="{% url 'sales:create_sale' %}" class="btn btn-primary">+ New Sale</a>
+    </div>
+</div>
+<form method="get" class="filter-bar">
+    <input type="text" name="q" value="{{ q }}" placeholder="Search name, ref, NIN…">
+    <input type="date" name="date_from" value="{{ date_from }}" title="From date">
+    <input type="date" name="date_to" value="{{ date_to }}" title="To date">
+    <select name="status"><option value="">All Statuses</option>
+        <option value="completed" {% if status == "completed" %}selected{% endif %}>Completed</option>
+        <option value="pending_payment" {% if status == "pending_payment" %}selected{% endif %}>Pending Payment</option>
+        <option value="cancelled" {% if status == "cancelled" %}selected{% endif %}>Cancelled</option>
+    </select>
+    <select name="payment"><option value="">All Payments</option>
+        <option value="cash" {% if payment == "cash" %}selected{% endif %}>Cash</option>
+        <option value="mobile_money" {% if payment == "mobile_money" %}selected{% endif %}>Mobile Money</option>
+        <option value="credit" {% if payment == "credit" %}selected{% endif %}>Credit</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Filter</button>
+    <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">Clear</a>
+</form>
+<div class="stats-grid" style="grid-template-columns:repeat(3,1fr);">
+    <div class="stat-card"><div class="stat-label">Total Revenue</div><div class="stat-value">{{ total_revenue|floatformat:0 }}</div></div>
+    <div class="stat-card"><div class="stat-label">Transactions</div><div class="stat-value">{{ sales|length }}</div></div>
+    <div class="stat-card"><div class="stat-label">Avg Sale</div><div class="stat-value">{% if sales|length > 0 %}{{ total_revenue|floatformat:0 }}{% else %}—{% endif %}</div></div>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>Ref</th><th>Customer</th><th>Outlet</th><th>Agent</th><th>Payment</th><th>Total</th><th>Status</th><th></th></tr></thead>
+        <tbody>
+        {% for s in sales %}
+        <tr>
+            <td><strong>{{ s.sale_ref }}</strong><br><span class="text-muted">{{ s.sale_date|date:"d M Y H:i" }}</span></td>
+            <td><strong>{{ s.customer.full_name }}</strong><br><span class="text-muted">{{ s.customer.phone_number }}</span></td>
+            <td>{{ s.outlet.name }}</td>
+            <td>{{ s.agent.get_full_name|default:s.agent.username }}</td>
+            <td><span class="chip">{{ s.get_payment_method_display }}</span></td>
+            <td><strong>{{ s.total_amount|floatformat:0 }}</strong>{% if s.balance > 0 %}<br><span style="color:var(--warning);font-size:11px;">Bal: {{ s.balance|floatformat:0 }}</span>{% endif %}</td>
+            <td><span class="badge {% if s.status == 'completed' %}badge-green{% elif s.status == 'pending_payment' %}badge-yellow{% else %}badge-red{% endif %}">{{ s.get_status_display }}</span></td>
+            <td><a href="{% url 'sales:sale_detail' s.pk %}" class="btn btn-outline btn-sm">View</a></td>
+        </tr>
+        {% empty %}<tr><td colspan="8" style="text-align:center;color:var(--muted);padding:32px;">No sales found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

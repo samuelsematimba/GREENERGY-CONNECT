@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Review Collection — {{ col.ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Review Collection — {{ col.ref }}</h1><p>{{ col.agent.get_full_name }} @ {{ col.outlet.name }}</p></div>
+    <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:600px;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+        <div><span class="text-muted">Period</span><br><strong>{{ col.period_start }} — {{ col.period_end }}</strong></div>
+        <div><span class="text-muted">Submitted</span><br>{{ col.submitted_at|date:"d M Y H:i" }}</div>
+        <div><span class="text-muted">Cash Collected</span><br><strong style="color:var(--success);">{{ col.cash_amount|floatformat:0 }}</strong></div>
+        <div><span class="text-muted">Mobile Money</span><br><strong style="color:var(--success);">{{ col.mobile_money_amount|floatformat:0 }}</strong></div>
+        <div><span class="text-muted">Total Collected</span><br><strong style="font-size:20px;color:var(--teal);">{{ col.total_collected|floatformat:0 }}</strong></div>
+        <div><span class="text-muted">System Expected</span><br><strong style="font-size:20px;">{{ col.system_expected|floatformat:0 }}</strong></div>
+    </div>
+    {% if col.mobile_money_reference %}<p class="text-muted">Mobile Ref: <code>{{ col.mobile_money_reference }}</code></p>{% endif %}
+    <div class="divider"></div>
+    {% with d=col.discrepancy_amount %}
+    <p style="margin-bottom:16px;">Discrepancy: <strong style="color:{% if d == 0 %}var(--success){% else %}var(--danger){% endif %};">{% if d > 0 %}+{% endif %}{{ d|floatformat:0 }}</strong>
+        {% if d == 0 %} ✓ Balanced{% else %} ⚠ Requires review{% endif %}
+    </p>
+    {% endwith %}
+    <form method="POST">{% csrf_token %}
+        <div class="form-group"><label>Discrepancy Reason (if applicable)</label>
+            <textarea name="discrepancy_reason" placeholder="Explain any discrepancy found…">{{ col.discrepancy_reason }}</textarea>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" name="action" value="balanced" class="btn btn-primary">✓ Mark Balanced</button>
+            <button type="submit" name="action" value="discrepancy" class="btn btn-danger">⚠ Flag Discrepancy</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Confirm Receipt — {{ transfer.transfer_ref }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Confirm Receipt — {{ transfer.transfer_ref }}</h1><p>{{ transfer.from_location.name }} → {{ transfer.to_location.name }}</p></div>
+    <a href="{% url 'stock:request_list' %}" class="btn btn-outline">← Back</a>
+</div>
+<div class="card" style="max-width:700px;">
+    <form method="POST">{% csrf_token %}
+        <div class="table-wrap" style="margin-bottom:20px;">
+            <table>
+                <thead><tr><th>Product</th><th>Dispatched</th><th>Qty Received</th></tr></thead>
+                <tbody>
+                {% for ti in transfer.items.all %}
+                <tr>
+                    <td><strong>{{ ti.product.name }}</strong>
+                        {% if ti.serialized_items.all %}<br><span class="text-muted" style="font-size:11px;">{% for si in ti.serialized_items.all %}{{ si.serial_number }}{% if not forloop.last %}, {% endif %}{% endfor %}</span>{% endif %}
+                    </td>
+                    <td>{{ ti.quantity_dispatched }}</td>
+                    <td><input type="number" name="received_{{ ti.id }}" value="{{ ti.quantity_dispatched }}" min="0" style="width:100px;"></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="form-group">
+            <label>Discrepancy Notes (if any items are missing or damaged)</label>
+            <textarea name="discrepancy_notes" placeholder="Leave blank if all items received in full…"></textarea>
+        </div>
+        <div class="btn-group mt-16">
+            <button type="submit" class="btn btn-primary">✓ Confirm Receipt</button>
+            <a href="{% url 'stock:request_list' %}" class="btn btn-outline">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

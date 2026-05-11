@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+{% block title %}Create Back-Office Reconciliation{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Create Back-Office Reconciliation</h1><p>Consolidate closed outlet reconciliations and submit to Accounts</p></div>
+    <a href="{% url 'reconciliation:bo_recon_list' %}" class="btn btn-outline">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="card">
+                <div class="card-title">Period & Financials</div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Period Start</label>
+                        <input type="date" name="period_start" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Period End</label>
+                        <input type="date" name="period_end" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Bank Confirmed Amount</label>
+                    <input type="number" name="bank_confirmed_amount" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Select Closed Outlet Reconciliations</div>
+                {% if outlet_recons %}
+                <div class="table-wrap" style="margin-bottom:16px;">
+                    <table>
+                        <thead><tr><th><input type="checkbox" id="checkAll"></th><th>Ref</th><th>Outlet</th><th>Period</th><th>Collected</th></tr></thead>
+                        <tbody>
+                            {% for r in outlet_recons %}
+                            <tr>
+                                <td><input type="checkbox" name="outlet_recon_ids" value="{{ r.id }}" class="recon-check"></td>
+                                <td><strong class="text-teal">{{ r.ref }}</strong></td>
+                                <td>{{ r.outlet.name }}</td>
+                                <td class="text-muted">{{ r.period_start }} – {{ r.period_end }}</td>
+                                <td>{{ r.total_collected }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">No closed outlet reconciliations available. Outlet managers must close their recons first.</p>
+                {% endif %}
+                <button type="submit" class="btn btn-primary" style="width:100%;">Submit to Accounts →</button>
+            </div>
+        </form>
+    </div>
+
+    <div>
+        <div class="card">
+            <div class="card-title">How This Works</div>
+            <p class="text-muted" style="line-height:1.7;font-size:13px;">
+                This creates a Level 3 reconciliation record. Select all closed outlet reconciliations for the period.
+                The system will automatically total the collected amounts. Enter the bank-confirmed figure to check for discrepancies.
+                Once submitted, the Accountant will review and apply a final sign-off to close the period.
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-title">Reconciliation Levels</div>
+            <div style="display:flex;flex-direction:column;gap:10px;">
+                <div style="padding:10px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+                    <div style="font-size:12px;color:var(--teal);font-weight:600;">LEVEL 1</div>
+                    <div style="font-size:13px;">Agent → Outlet</div>
+                </div>
+                <div style="padding:10px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+                    <div style="font-size:12px;color:var(--teal);font-weight:600;">LEVEL 2</div>
+                    <div style="font-size:13px;">Outlet → Back Office</div>
+                </div>
+                <div style="padding:10px;background:rgba(0,184,169,0.15);border-radius:8px;border-left:3px solid var(--teal);">
+                    <div style="font-size:12px;color:var(--teal);font-weight:600;">LEVEL 3 — YOU ARE HERE</div>
+                    <div style="font-size:13px;">Back Office → Accounts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('checkAll').addEventListener('change', function() {
+    document.querySelectorAll('.recon-check').forEach(cb => cb.checked = this.checked);
+});
+</script>
+{% endblock %}
+{% endblock %}

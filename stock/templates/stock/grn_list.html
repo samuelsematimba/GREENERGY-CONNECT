@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Goods Receipts{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Goods Receipts</h1><p>Stock received at warehouses</p></div>
+    <a href="{% url 'stock:create_grn' %}" class="btn btn-primary">+ New Receipt</a>
+</div>
+<div class="table-wrap">
+    <table>
+        <thead><tr><th>GRN Number</th><th>Warehouse</th><th>Received By</th><th>Date</th><th>Items</th></tr></thead>
+        <tbody>
+        {% for grn in receipts %}
+        <tr>
+            <td><strong>{{ grn.grn_number }}</strong></td>
+            <td>{{ grn.warehouse.name }}</td>
+            <td>{{ grn.received_by.get_full_name|default:grn.received_by.username }}</td>
+            <td>{{ grn.receipt_date|date:"d M Y" }}</td>
+            <td>{{ grn.items.count }} product(s)</td>
+        </tr>
+        {% empty %}<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:32px;">No goods receipts yet.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
