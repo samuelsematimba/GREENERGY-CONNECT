@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Create Subsidy{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Create Subsidy</h1><p>Set up a new discount scheme for products and outlets</p></div>
+    <a href="{% url 'products:subsidy_list' %}" class="btn btn-outline">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+<div>
+<form method="POST">
+{% csrf_token %}
+<div class="card">
+    <div class="card-title">Subsidy Details</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Subsidy Name *</label>
+            <input type="text" name="name" placeholder="e.g. Government Clean Cooking Subsidy" required>
+        </div>
+        <div class="form-group">
+            <label>Subsidy Code *</label>
+            <input type="text" name="code" placeholder="e.g. GOV-CC-2026" required style="text-transform:uppercase;">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description" placeholder="Describe the subsidy scheme, eligibility, etc."></textarea>
+    </div>
+    <div class="form-group">
+        <label>Funder / Sponsor</label>
+        <input type="text" name="funder" placeholder="e.g. Ministry of Energy, UNHCR, NGO Name">
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Discount Configuration</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Discount Type *</label>
+            <select name="discount_type" id="discountType" onchange="updateLabel()">
+                <option value="fixed">Fixed Amount (e.g. 50,000 off)</option>
+                <option value="percent">Percentage (e.g. 20% off)</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label id="discountLabel">Discount Amount *</label>
+            <input type="number" name="discount_value" id="discountValue" step="0.01" min="0" placeholder="0.00" required>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Valid From</label>
+            <input type="date" name="valid_from">
+        </div>
+        <div class="form-group">
+            <label>Valid To</label>
+            <input type="date" name="valid_to">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Status</label>
+        <select name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+        </select>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Applicable Products</div>
+    <p class="text-muted" style="margin-bottom:12px;font-size:13px;">Select which products this subsidy can be applied to. Leave all unchecked to allow any product.</p>
+    <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+    {% for p in products %}
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--card-border);font-size:13px;color:rgba(255,255,255,0.8);">
+        <input type="checkbox" name="products" value="{{ p.id }}" style="width:auto;">
+        <span>{{ p.name }}</span>
+        <span class="chip" style="margin-left:auto;">{{ p.sku }}</span>
+        <span class="badge {% if p.product_type == 'serialized' %}badge-teal{% else %}badge-gray{% endif %}" style="font-size:10px;">{{ p.get_product_type_display }}</span>
+    </label>
+    {% empty %}
+    <p class="text-muted">No products found. Create products first.</p>
+    {% endfor %}
+    </div>
+</div> 
+
+<div class="card">
+    <div class="card-title">Applicable Combos</div>
+    <p class="text-muted" style="margin-bottom:12px;font-size:13px;">
+        Select which combos this subsidy can also be applied to.
+    </p>
+    <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+    {% for c in combos %}
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--card-border);font-size:13px;color:rgba(255,255,255,0.8);">
+        <input type="checkbox" name="combos" value="{{ c.id }}" style="width:auto;">
+        <span>{{ c.name }}</span>
+        <span class="chip" style="margin-left:auto;">{{ c.code }}</span>
+        <span class="text-teal" style="font-size:12px;">{{ c.price }}</span>
+    </label>
+    {% empty %}
+    <p class="text-muted">No combos found. Create combos first under Products → Combos.</p>
+    {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Applicable Outlets</div>
+    <p class="text-muted" style="margin-bottom:12px;font-size:13px;">Select which outlets can use this subsidy when making sales.</p>
+    <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+    {% for o in outlets %}
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--card-border);font-size:13px;color:rgba(255,255,255,0.8);">
+        <input type="checkbox" name="outlets" value="{{ o.id }}" style="width:auto;">
+        <span>{{ o.name }}</span>
+        <span class="text-muted" style="margin-left:auto;font-size:12px;">{{ o.country }}</span>
+    </label>
+    {% empty %}
+    <p class="text-muted">No outlets found.</p>
+    {% endfor %}
+    </div>
+</div>
+
+<button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">Create Subsidy</button>
+</form>
+</div>
+
+<div>
+<div class="card">
+    <div class="card-title">How Subsidies Work</div>
+    <div style="display:flex;flex-direction:column;gap:14px;font-size:13px;color:var(--muted);line-height:1.7;">
+        <div style="padding:12px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+            <strong style="color:var(--white);">1. Create</strong><br>
+            Define the subsidy with its name, code, discount amount or percentage, and which products and outlets it applies to.
+        </div>
+        <div style="padding:12px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+            <strong style="color:var(--white);">2. At Point of Sale</strong><br>
+            When an agent makes a sale at an eligible outlet, active subsidies for the selected products will appear as a dropdown on the sale form.
+        </div>
+        <div style="padding:12px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+            <strong style="color:var(--white);">3. Discount Applied</strong><br>
+            Selecting a subsidy automatically adjusts the sale total. The discount amount is recorded against the sale for reconciliation and reporting.
+        </div>
+    </div>
+</div>
+<div class="card">
+    <div class="card-title">Discount Types</div>
+    <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+        <div style="padding:10px;border:1px solid var(--card-border);border-radius:8px;">
+            <strong class="text-teal">Fixed Amount</strong><br>
+            <span class="text-muted">A set amount is deducted from the sale total. E.g. if the product is 200,000 and subsidy is 50,000 fixed, customer pays 150,000.</span>
+        </div>
+        <div style="padding:10px;border:1px solid var(--card-border);border-radius:8px;">
+            <strong class="text-teal">Percentage</strong><br>
+            <span class="text-muted">A percentage is deducted. E.g. 20% off a 200,000 product = 40,000 discount, customer pays 160,000.</span>
+        </div>
+    </div>
+</div>
+</div>
+</div>
+
+<script>
+function updateLabel() {
+    const type = document.getElementById('discountType').value;
+    const label = document.getElementById('discountLabel');
+    const input = document.getElementById('discountValue');
+    if (type === 'percent') {
+        label.textContent = 'Discount Percentage (%) *';
+        input.max = 100;
+        input.placeholder = 'e.g. 20';
+    } else {
+        label.textContent = 'Discount Amount *';
+        input.removeAttribute('max');
+        input.placeholder = '0.00';
+    }
+}
+</script>
+{% endblock %}

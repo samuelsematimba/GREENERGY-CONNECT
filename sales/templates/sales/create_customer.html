@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+{% block title %}Create Customer{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Create Customer</h1><p>Check for duplicates automatically before saving</p></div>
+    <div class="btn-group">
+        <a href="{% url 'sales:customer_list' %}" class="btn btn-outline">← Customers</a>
+        <a href="{% url 'sales:create_sale' %}" class="btn btn-outline">Go to Sale</a>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+<div>
+
+{# ── Live duplicate check ── #}
+<div class="card" style="border-color:rgba(243,156,18,0.3);" id="duplicateWarning" style="display:none;">
+    <div class="card-title" style="color:var(--warning);">⚠ Possible Duplicate Found</div>
+    <div id="duplicateContent"></div>
+</div>
+
+<form method="POST" enctype="multipart/form-data">
+{% csrf_token %}
+<input type="hidden" name="next" value="{{ request.GET.next|default:'' }}">
+<div class="card">
+    <div class="card-title">Customer Information</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" name="full_name" id="fullName" required placeholder="Enter full name" style="text-transform:uppercase;">
+        </div>
+        <div class="form-group">
+            <label>Gender</label>
+            <select name="gender">
+                <option value="">— Select —</option>
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+                <option value="O">Other</option>
+            </select>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>NIN (National ID) *</label>
+            <input type="text" name="nin" id="ninInput" required placeholder="e.g. CM90012345678AB" style="text-transform:uppercase;" oninput="checkDuplicate()">
+        </div>
+        <div class="form-group">
+            <label>Phone Number *</label>
+            <input type="text" name="phone_number" id="phoneInput" required placeholder="e.g. 0701234567" oninput="checkDuplicate()">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Village / Area</label>
+            <input type="text" name="village" placeholder="Village or area">
+        </div>
+        <div class="form-group">
+            <label>District</label>
+            <input type="text" name="district" placeholder="District">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Outlet (Registered At)</label>
+            <select name="registered_at">
+                <option value="">— Select outlet —</option>
+                {% if outlet %}<option value="{{ outlet.id }}" selected>{{ outlet.name }}</option>{% endif %}
+                {% for o in outlets %}
+                {% if not outlet or o.id != outlet.id %}
+                <option value="{{ o.id }}">{{ o.name }}</option>
+                {% endif %}
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>National ID Photo</label>
+            <input type="file" name="national_id_photo" accept="image/*">
+        </div>
+    </div>
+    <div style="display:flex;gap:10px;">
+        <button type="submit" class="btn btn-primary" style="flex:1;padding:12px;">✓ Create Customer</button>
+        <button type="submit" name="next" value="sale" class="btn btn-outline" style="flex:1;padding:12px;">✓ Create & Go to Sale →</button>
+    </div>
+</div>
+</form>
+</div>
+
+<div>
+<div class="card">
+    <div class="card-title">Before You Create</div>
+    <p class="text-muted" style="font-size:13px;line-height:1.8;">
+        The system checks for existing customers by NIN and phone number across <strong style="color:var(--white);">all outlets and locations</strong> — not just your own. This prevents duplicate entries in the database.
+        <br><br>
+        If a matching customer is found, you will be redirected to their profile instead of creating a new record.
+    </p>
+</div>
+<div class="card" style="margin-top:0;">
+    <div class="card-title">Quick Customer Search</div>
+    <input type="text" id="quickSearch" placeholder="Search by name, NIN or phone…" oninput="quickSearchCustomers(this.value)">
+    <div id="quickSearchResults" style="margin-top:10px;"></div>
+</div>
+</div>
+</div>
+
+<script>
+let checkTimeout;
+function checkDuplicate() {
+    clearTimeout(checkTimeout);
+    checkTimeout = setTimeout(() => {
+        const nin = document.getElementById('ninInput').value.trim();
+        const phone = document.getElementById('phoneInput').value.trim();
+        if (nin.length < 5 && phone.length < 9) return;
+        const q = nin.length >= 5 ? nin : phone;
+        fetch(`{% url 'sales:customer_search_ajax' %}?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                const box = document.getElementById('duplicateWarning');
+                const content = document.getElementById('duplicateContent');
+                if (data.customers.length > 0) {
+                    const c = data.customers[0];
+                    content.innerHTML = `
+                        <p style="font-size:13px;color:var(--muted);margin-bottom:10px;">A customer matching this NIN or phone already exists:</p>
+                        <div style="padding:12px;background:rgba(255,255,255,0.04);border-radius:8px;margin-bottom:12px;">
+                            <strong>${c.full_name}</strong><br>
+                            <span class="text-muted">NIN: ${c.nin} | Phone: ${c.phone_number}</span><br>
+                            <span class="text-muted">Registered at: ${c.registered_at} | ${c.sales_count} sale(s)</span>
+                        </div>
+                        <a href="/sales/customers/${c.id}/" class="btn btn-outline btn-sm">View Existing Customer</a>
+                        <a href="/sales/create/?customer_id=${c.id}" class="btn btn-primary btn-sm">Use for Sale →</a>`;
+                    box.style.display = 'block';
+                } else {
+                    box.style.display = 'none';
+                }
+            });
+    }, 500);
+}
+
+let searchTimeout;
+function quickSearchCustomers(q) {
+    clearTimeout(searchTimeout);
+    if (q.length < 2) { document.getElementById('quickSearchResults').innerHTML = ''; return; }
+    searchTimeout = setTimeout(() => {
+        fetch(`{% url 'sales:customer_search_ajax' %}?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                const div = document.getElementById('quickSearchResults');
+                if (!data.customers.length) { div.innerHTML = '<p class="text-muted" style="font-size:13px;">No customers found.</p>'; return; }
+                div.innerHTML = data.customers.map(c => `
+                    <div style="padding:10px;border:1px solid var(--card-border);border-radius:8px;margin-bottom:6px;">
+                        <div style="display:flex;justify-content:space-between;">
+                            <strong style="font-size:13px;">${c.full_name}</strong>
+                            <span class="chip">${c.sales_count} sale(s)</span>
+                        </div>
+                        <div class="text-muted" style="font-size:12px;margin:4px 0;">${c.nin} | ${c.phone_number}</div>
+                        <a href="/sales/create/?customer_id=${c.id}" class="btn btn-primary btn-sm">Sell to this customer →</a>
+                    </div>`).join('');
+            });
+    }, 400);
+}
+</script>
+{% endblock %}

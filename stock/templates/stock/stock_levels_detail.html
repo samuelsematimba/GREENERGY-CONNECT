@@ -1,0 +1,316 @@
+{% extends "base.html" %}
+{% block title %}Stock Levels — Detail{% endblock %}
+{% block content %}
+
+<div class="page-header flex-between">
+    <div>
+        <h1>Stock Levels</h1>
+        <p>
+            {% if selected_location %}
+                Viewing: <strong class="text-teal">{{ selected_location.name }}</strong>
+                <span class="badge {% if selected_location.location_type == 'warehouse' %}badge-teal{% else %}badge-green{% endif %}">
+                    {{ selected_location.get_location_type_display }}
+                </span>
+            {% elif is_admin %}
+                All locations overview
+            {% else %}
+                Your stock overview
+            {% endif %}
+        </p>
+    </div>
+    <div class="btn-group">
+        {% if selected_location %}
+        <a href="{% url 'stock:stock_levels' %}" class="btn btn-outline">← All Locations</a>
+        {% endif %}
+        {% if is_admin %}
+        <a href="{% url 'stock:create_grn' %}" class="btn btn-outline">📥 Receive Stock</a>
+        {% endif %}
+        <a href="{% url 'stock:create_request' %}" class="btn btn-primary">📋 Request Stock</a>
+    </div>
+</div>
+
+{% if is_admin and not selected_location %}
+<form method="get" class="filter-bar">
+    <select name="type" onchange="this.form.submit()">
+        <option value="">All Location Types</option>
+        <option value="warehouse" {% if location_type_filter == 'warehouse' %}selected{% endif %}>Warehouses Only</option>
+        <option value="outlet" {% if location_type_filter == 'outlet' %}selected{% endif %}>Outlets Only</option>
+    </select>
+    <select name="location" onchange="this.form.submit()">
+        <option value="">Select location to drill in…</option>
+        {% for summary in location_summaries %}
+        <option value="{{ summary.location.id }}">{{ summary.location.name }} ({{ summary.location.get_location_type_display }})</option>
+        {% endfor %}
+    </select>
+    <a href="{% url 'stock:stock_levels' %}" class="btn btn-outline">Clear</a>
+</form>
+{% endif %}
+
+{% if not selected_location %}
+
+{% if location_summaries %}
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-bottom:28px;">
+{% for summary in location_summaries %}
+<div class="card" style="border-color:{% if summary.location.location_type == 'warehouse' %}rgba(0,184,169,0.4){% else %}rgba(39,174,96,0.3){% endif %};">
+
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+        <div>
+            <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--white);">
+                {{ summary.location.name }}
+            </div>
+            <div class="text-muted" style="font-size:12px;margin-top:2px;">
+                {{ summary.location.country }}
+            </div>
+        </div>
+        <span class="badge {% if summary.location.location_type == 'warehouse' %}badge-teal{% else %}badge-green{% endif %}">
+            {{ summary.location.get_location_type_display }}
+        </span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px;">
+        <div style="background:rgba(0,184,169,0.06);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--teal);">{{ summary.serialized_count }}</div>
+            <div style="font-size:11px;color:var(--muted);">Serialized In Stock</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.03);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--white);">{{ summary.non_serialized_lines }}</div>
+            <div style="font-size:11px;color:var(--muted);">Non-Serialized Lines</div>
+        </div>
+        {% if summary.serialized_transit > 0 %}
+        <div style="background:rgba(243,156,18,0.08);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--warning);">{{ summary.serialized_transit }}</div>
+            <div style="font-size:11px;color:var(--muted);">In Transit</div>
+        </div>
+        {% endif %}
+        {% if summary.in_transit_incoming > 0 %}
+        <div style="background:rgba(0,184,169,0.06);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--teal);">{{ summary.in_transit_incoming }}</div>
+            <div style="font-size:11px;color:var(--muted);">Incoming Transfers</div>
+        </div>
+        {% endif %}
+        {% if summary.pending_requests > 0 %}
+        <div style="background:rgba(231,76,60,0.08);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:22px;font-weight:700;color:var(--danger);">{{ summary.pending_requests }}</div>
+            <div style="font-size:11px;color:var(--muted);">Pending Requests</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <a href="{% url 'stock:stock_levels' %}?location={{ summary.location.id }}"
+       class="btn btn-outline" style="width:100%;justify-content:center;">
+        🔍 View Details
+    </a>
+</div>
+{% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align:center;padding:48px;">
+    <p class="text-muted">No locations found. Create locations first.</p>
+</div>
+{% endif %}
+
+{% endif %}{# end overview #}
+
+{% if selected_location %}
+
+<div class="stats-grid" style="margin-bottom:24px;">
+    <div class="stat-card">
+        <div class="stat-label">Serialized In Stock</div>
+        <div class="stat-value">{{ total_in_stock }}</div>
+        <div class="stat-sub">unique units on hand</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Non-Serialized Lines</div>
+        <div class="stat-value">{{ detail_non_serialized.count }}</div>
+        <div class="stat-sub">product types in stock</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">In Transit (incoming)</div>
+        <div class="stat-value" style="color:var(--warning);">{{ detail_in_transit.count }}</div>
+        <div class="stat-sub">transfers awaiting receipt</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Recent Transfers</div>
+        <div class="stat-value">{{ detail_transfers.count }}</div>
+        <div class="stat-sub">last 20 movements</div>
+    </div>
+</div>
+
+{% if detail_serialized %}
+{% for pg in detail_serialized %}
+<div class="card" style="margin-bottom:16px;">
+    <div class="card-title flex-between">
+        <span>{{ pg.product.name }}
+            <span class="chip">{{ pg.product.sku }}</span>
+        </span>
+        <div class="btn-group">
+            <span class="badge badge-green">{{ pg.in_stock|length }} In Stock</span>
+            {% if pg.in_transit %}<span class="badge badge-yellow">{{ pg.in_transit|length }} In Transit</span>{% endif %}
+            {% if pg.sold %}<span class="badge badge-teal">{{ pg.sold|length }} Sold</span>{% endif %}
+            {% if pg.faulty %}<span class="badge badge-red">{{ pg.faulty|length }} Faulty</span>{% endif %}
+        </div>
+    </div>
+
+    {% if pg.in_stock %}
+    <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--teal);font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+            ✅ In Stock ({{ pg.in_stock|length }})
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            {% for item in pg.in_stock %}
+            <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:rgba(39,174,96,0.1);border:1px solid rgba(39,174,96,0.25);border-radius:6px;font-size:12px;font-family:monospace;color:rgba(255,255,255,0.9);">
+                {{ item.serial_number }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if pg.in_transit %}
+    <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--warning);font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+             In Transit ({{ pg.in_transit|length }})
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            {% for item in pg.in_transit %}
+            <span style="display:inline-flex;align-items:center;padding:4px 10px;background:rgba(243,156,18,0.1);border:1px solid rgba(243,156,18,0.25);border-radius:6px;font-size:12px;font-family:monospace;color:rgba(255,255,255,0.9);">
+                {{ item.serial_number }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% if pg.faulty %}
+    <div style="margin-bottom:12px;">
+        <div style="font-size:12px;color:var(--danger);font-weight:600;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px;">
+            ⚠ Faulty ({{ pg.faulty|length }})
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+            {% for item in pg.faulty %}
+            <span style="display:inline-flex;align-items:center;padding:4px 10px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.25);border-radius:6px;font-size:12px;font-family:monospace;color:rgba(255,255,255,0.9);">
+                {{ item.serial_number }}
+            </span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endfor %}
+{% endif %}
+
+{% if detail_non_serialized %}
+<div class="card">
+    <div class="card-title">Non-Serialized Stock</div>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Category</th>
+                    <th>Quantity on Hand</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for sl in detail_non_serialized %}
+            <tr>
+                <td><strong>{{ sl.product.name }}</strong></td>
+                <td><span class="chip">{{ sl.product.sku }}</span></td>
+                <td>{{ sl.product.category|default:"—" }}</td>
+                <td>
+                    <strong style="font-size:18px;color:
+                        {% if sl.quantity == 0 %}var(--danger)
+                        {% elif sl.quantity < 5 %}var(--warning)
+                        {% else %}var(--success){% endif %};">
+                        {{ sl.quantity }}
+                    </strong>
+                    <span class="text-muted"> {{ sl.product.get_unit_display }}</span>
+                </td>
+                <td class="text-muted">{{ sl.updated_at|date:"d M Y H:i" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--muted);padding:24px;">No non-serialized stock.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if detail_in_transit %}
+<div class="card">
+    <div class="card-title">Incoming Transfers (Awaiting Receipt)</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Transfer Ref</th><th>From</th><th>Items</th><th>Dispatched</th><th>Action</th></tr></thead>
+            <tbody>
+            {% for t in detail_in_transit %}
+            <tr>
+                <td><strong class="text-teal">{{ t.transfer_ref }}</strong></td>
+                <td>{{ t.from_location.name }}</td>
+                <td>
+                    {% for ti in t.items.all %}
+                    <span class="chip">{{ ti.product.name }} ×{{ ti.quantity_dispatched }}</span>
+                    {% endfor %}
+                </td>
+                <td class="text-muted">{{ t.dispatch_date|date:"d M Y H:i" }}</td>
+                <td><a href="{% url 'stock:confirm_receipt' t.pk %}" class="btn btn-primary btn-sm">Confirm Receipt</a></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if detail_transfers %}
+<div class="card">
+    <div class="card-title">Transfer History (Last 20)</div>
+    <div class="table-wrap">
+        <table>
+            <thead><tr><th>Ref</th><th>Direction</th><th>From</th><th>To</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for t in detail_transfers %}
+            <tr>
+                <td><strong class="text-teal">{{ t.transfer_ref }}</strong></td>
+                <td>
+                    {% if t.from_location == selected_location %}
+                    <span style="color:var(--danger);">↑ Outbound</span>
+                    {% else %}
+                    <span style="color:var(--success);">↓ Inbound</span>
+                    {% endif %}
+                </td>
+                <td>{{ t.from_location.name }}</td>
+                <td>{{ t.to_location.name }}</td>
+                <td class="text-muted">{{ t.dispatch_date|date:"d M Y" }}</td>
+                <td>
+                    {% if t.status == 'received' %}<span class="badge badge-green">Received</span>
+                    {% elif t.status == 'dispatched' %}<span class="badge badge-yellow">Dispatched</span>
+                    {% elif t.status == 'in_transit' %}<span class="badge badge-yellow">In Transit</span>
+                    {% elif t.status == 'discrepancy' %}<span class="badge badge-red">Discrepancy</span>
+                    {% else %}<span class="badge badge-gray">{{ t.get_status_display }}</span>{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% if not detail_serialized and not detail_non_serialized and not detail_in_transit %}
+<div class="card" style="text-align:center;padding:48px;">
+    <p class="text-muted" style="font-size:16px;">No stock recorded at {{ selected_location.name }} yet.</p>
+    <div class="btn-group" style="justify-content:center;margin-top:16px;">
+        {% if is_admin %}<a href="{% url 'stock:create_grn' %}" class="btn btn-primary">Receive First Stock</a>{% endif %}
+        <a href="{% url 'stock:create_request' %}" class="btn btn-outline">Request Stock</a>
+    </div>
+</div>
+{% endif %}
+
+{% endif %}{# end detail view #}
+
+{% endblock %}

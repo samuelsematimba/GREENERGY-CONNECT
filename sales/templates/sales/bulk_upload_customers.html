@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Bulk Upload Customers{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Bulk Upload Customers</h1><p>Import multiple customers at once via CSV</p></div>
+    <a href="{% url 'sales:customer_list' %}" class="btn btn-outline">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+<div>
+    <div class="card">
+        <div class="card-title">Upload CSV File</div>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="form-group">
+                <label>CSV File *</label>
+                <input type="file" name="csv_file" accept=".csv" required>
+                <small class="text-muted">File must be .csv format with the required columns.</small>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button type="submit" class="btn btn-primary" style="flex:1;">⬆ Upload & Import</button>
+                <a href="{% url 'sales:customer_template' %}" class="btn btn-outline">⬇ Download Template</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <div class="card">
+        <div class="card-title">Required CSV Columns</div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Column</th><th>Required</th><th>Notes</th></tr></thead>
+                <tbody>
+                    <tr><td><span class="chip">full_name</span></td><td><span class="badge badge-red">Yes</span></td><td>Customer full name</td></tr>
+                    <tr><td><span class="chip">nin</span></td><td><span class="badge badge-red">Yes</span></td><td>National ID number</td></tr>
+                    <tr><td><span class="chip">phone_number</span></td><td><span class="badge badge-red">Yes</span></td><td>Phone number</td></tr>
+                    <tr><td><span class="chip">gender</span></td><td><span class="badge badge-gray">No</span></td><td>M, F or O</td></tr>
+                    <tr><td><span class="chip">village</span></td><td><span class="badge badge-gray">No</span></td><td>Village or area</td></tr>
+                    <tr><td><span class="chip">district</span></td><td><span class="badge badge-gray">No</span></td><td>District</td></tr>
+                    <tr><td><span class="chip">outlet</span></td><td><span class="badge badge-gray">No</span></td><td>Exact outlet name in system</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="card" style="margin-top:0;">
+        <div class="card-title">How It Works</div>
+        <p class="text-muted" style="font-size:13px;line-height:1.8;">
+            The system checks every row against existing records by <strong style="color:var(--white);">NIN and phone number</strong>.
+            Duplicate entries are automatically skipped — no manual checking needed.
+            After upload, a summary shows how many were created and how many were skipped.
+        </p>
+        <div style="margin-top:10px;">
+            <strong style="font-size:13px;color:var(--teal);">Available Outlets:</strong>
+            <div style="margin-top:8px;display:flex;flex-wrap:wrap;gap:6px;">
+                {% for o in outlets %}<span class="chip">{{ o.name }}</span>{% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}

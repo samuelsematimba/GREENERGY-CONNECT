@@ -39,7 +39,13 @@
             <td><strong>{{ s.sale_ref }}</strong><br><span class="text-muted">{{ s.sale_date|date:"d M Y H:i" }}</span></td>
             <td><strong>{{ s.customer.full_name }}</strong><br><span class="text-muted">{{ s.customer.phone_number }}</span></td>
             <td>{{ s.outlet.name }}</td>
-            <td>{{ s.agent.get_full_name|default:s.agent.username }}</td>
+            <td>
+                {% if s.agent %}
+                    {{ s.agent.get_full_name|default:s.agent.username }}
+                {% else %}
+                    No Agent
+                {% endif %}
+            </td>
             <td><span class="chip">{{ s.get_payment_method_display }}</span></td>
             <td><strong>{{ s.total_amount|floatformat:0 }}</strong>{% if s.balance > 0 %}<br><span style="color:var(--warning);font-size:11px;">Bal: {{ s.balance|floatformat:0 }}</span>{% endif %}</td>
             <td><span class="badge {% if s.status == 'completed' %}badge-green{% elif s.status == 'pending_payment' %}badge-yellow{% else %}badge-red{% endif %}">{{ s.get_status_display }}</span></td>

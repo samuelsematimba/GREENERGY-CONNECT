@@ -2,7 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from .models import Product, Category, SerializedItem, Combo, ComboItem, LocationPrice, PriceHistory
+from django.db import models
+from .models import Product, Category, SerializedItem, Combo, ComboItem, LocationPrice, PriceHistory, Subsidy
+from accounts.models import Location
 from accounts.models import Location, Country
 import segno
 from io import BytesIO
@@ -197,3 +199,131 @@ def create_combo(request):
         'countries': Country.objects.all(),
     }
     return render(request, 'products/create_combo.html', context)
+
+
+# ─── SUBSIDIES ────────────────────────────────────────────────────────────────
+
+@login_required
+def subsidy_list(request):
+    subsidies = Subsidy.objects.prefetch_related('products', 'outlets').all()
+    return render(request, 'products/subsidy_list.html', {'subsidies': subsidies})
+
+
+@login_required
+def create_subsidy(request):
+    products = Product.objects.filter(is_active=True).order_by('name')
+    outlets = Location.objects.filter(location_type='outlet').order_by('name')
+    combos = Combo.objects.filter(is_active=True).order_by('name')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        code = request.POST.get('code', '').strip().upper()
+        description = request.POST.get('description', '').strip()
+        discount_type = request.POST.get('discount_type')
+        discount_value = request.POST.get('discount_value')
+        funder = request.POST.get('funder', '').strip()
+        valid_from = request.POST.get('valid_from') or None
+        valid_to = request.POST.get('valid_to') or None
+        status = request.POST.get('status', 'active')
+        product_ids = request.POST.getlist('products')
+        outlet_ids = request.POST.getlist('outlets')
+        combo_ids = request.POST.getlist('combos')
+ 
+
+        if not name or not code or not discount_value:
+            messages.error(request, 'Name, code and discount value are required.')
+            return render(request, 'products/create_subsidy.html', {
+                'products': products, 'outlets': outlets, 'combos': combos
+            })
+
+        if Subsidy.objects.filter(code=code).exists():
+            messages.error(request, f'A subsidy with code {code} already exists.')
+            return render(request, 'products/create_subsidy.html', {
+                'products': products, 'outlets': outlets, 'combos': combos
+            })
+
+        subsidy = Subsidy.objects.create(
+            name=name, code=code, description=description,
+            discount_type=discount_type, discount_value=discount_value,
+            funder=funder, valid_from=valid_from, valid_to=valid_to,
+            status=status, created_by=request.user
+        )
+        if product_ids:
+            subsidy.products.set(product_ids)
+        if outlet_ids:
+            subsidy.outlets.set(outlet_ids)
+
+        messages.success(request, f'Subsidy "{name}" created successfully.')
+        return redirect('products:subsidy_list')
+
+    return render(request, 'products/create_subsidy.html', {
+        'products': products, 'outlets': outlets, 'combos': combos
+    })
+
+
+@login_required
+def edit_subsidy(request, pk):
+    subsidy = get_object_or_404(Subsidy, pk=pk)
+    products = Product.objects.filter(is_active=True).order_by('name')
+    outlets = Location.objects.filter(location_type='outlet').order_by('name')
+
+    if request.method == 'POST':
+        subsidy.name = request.POST.get('name', '').strip()
+        subsidy.description = request.POST.get('description', '').strip()
+        subsidy.discount_type = request.POST.get('discount_type')
+        subsidy.discount_value = request.POST.get('discount_value')
+        subsidy.funder = request.POST.get('funder', '').strip()
+        subsidy.valid_from = request.POST.get('valid_from') or None
+        subsidy.valid_to = request.POST.get('valid_to') or None
+        subsidy.status = request.POST.get('status', 'active')
+        subsidy.products.set(request.POST.getlist('products'))
+        subsidy.outlets.set(request.POST.getlist('outlets'))
+        subsidy.save()
+        messages.success(request, f'Subsidy "{subsidy.name}" updated.')
+        return redirect('products:subsidy_list')
+
+    return render(request, 'products/edit_subsidy.html', {
+        'subsidy': subsidy,
+        'products': products,
+        'outlets': outlets,
+        'selected_products': list(subsidy.products.values_list('id', flat=True)),
+        'selected_outlets': list(subsidy.outlets.values_list('id', flat=True)),
+    })
+
+
+def get_subsidies_for_outlet(request):
+    """AJAX — returns subsidies valid for a given outlet as JSON."""
+    import json
+    from django.http import JsonResponse
+    from django.utils.timezone import now
+
+    outlet_id = request.GET.get('outlet_id')
+    product_id = request.GET.get('product_id')
+
+    if not outlet_id:
+        return JsonResponse({'subsidies': []})
+
+    today = now().date()
+    qs = Subsidy.objects.filter(
+        outlets__id=outlet_id,
+        status='active'
+    ).filter(
+        models.Q(valid_from__isnull=True) | models.Q(valid_from__lte=today)
+    ).filter(
+        models.Q(valid_to__isnull=True) | models.Q(valid_to__gte=today)
+    )
+
+    if product_id:
+        qs = qs.filter(products__id=product_id)
+
+    data = []
+    for s in qs.distinct():
+        data.append({
+            'id': s.id,
+            'name': s.name,
+            'code': s.code,
+            'discount_type': s.discount_type,
+            'discount_value': str(s.discount_value),
+            'label': f"{s.name} ({s.get_discount_display_label()})",
+        })
+    return JsonResponse({'subsidies': data})

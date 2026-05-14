@@ -24,7 +24,7 @@
             <td><strong>{{ req.request_ref }}</strong></td>
             <td>{{ req.outlet.name }}</td>
             <td>{{ req.warehouse.name }}</td>
-            <td>{{ req.requested_by.get_full_name|default:req.requested_by.username }}</td>
+            <td>{% if req.requested_by %}{{ req.requested_by.get_full_name|default:req.requested_by.username }}{% else %}—{% endif %}</td>
             <td>{{ req.request_date|date:"d M Y" }}</td>
             <td><span class="badge
                 {% if req.status == 'pending' %}badge-yellow
@@ -33,10 +33,19 @@
                 {% elif req.status == 'dispatched' %}badge-teal
                 {% else %}badge-gray{% endif %}">{{ req.get_status_display }}</span></td>
             <td>
-                {% if req.status == 'pending' %}<a href="{% url 'stock:review_request' req.pk %}" class="btn btn-outline btn-sm">Review</a>
-                {% elif req.status == 'approved' or req.status == 'partial' %}<a href="{% url 'stock:dispatch_transfer' req.pk %}" class="btn btn-primary btn-sm">Dispatch</a>
-                {% elif req.status == 'dispatched' and req.transfer %}<a href="{% url 'stock:confirm_receipt' req.transfer.pk %}" class="btn btn-outline btn-sm">Confirm</a>
-                {% else %}<span class="text-muted">—</span>{% endif %}
+            {% if req.status == 'pending' %}
+                <a href="{% url 'stock:review_request' req.pk %}" class="btn btn-outline btn-sm">Review</a>
+            {% elif req.status == 'approved' or req.status == 'partial' %}
+                <a href="{% url 'stock:dispatch_transfer' req.pk %}" class="btn btn-primary btn-sm">Dispatch</a>
+            {% elif req.status == 'dispatched' %}
+                {% for t in req.transfers.all %}
+                    <a href="{% url 'stock:confirm_receipt' t.pk %}" class="btn btn-outline btn-sm">Confirm Receipt</a>
+                {% empty %}
+                    <span class="text-muted">Awaiting transfer record</span>
+            {% endfor %}
+            {% else %}
+                <span class="text-muted">—</span>
+            {% endif %}
             </td>
         </tr>
         {% empty %}<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px;">No stock requests found.</td></tr>

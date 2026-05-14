@@ -1,3 +1,4 @@
+from accounts.decorators import can_submit_collection, outlet_recon_access, backoffice_or_above, accountant_only, get_profile
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -24,6 +25,7 @@ def recon_dashboard(request):
 
 
 @login_required
+@can_submit_collection
 def submit_agent_collection(request):
     profile = getattr(request.user, 'userprofile', None)
     outlet = profile.location if profile and profile.location else None
@@ -32,35 +34,62 @@ def submit_agent_collection(request):
         outlet_id = request.POST.get('outlet') or (outlet.id if outlet else None)
         period_start = request.POST.get('period_start')
         period_end = request.POST.get('period_end')
-        cash = request.POST.get('cash_amount', 0)
-        mobile = request.POST.get('mobile_money_amount', 0)
+        cash = request.POST.get('cash_amount', 0) or 0
+        mobile = request.POST.get('mobile_money_amount', 0) or 0
         mobile_ref = request.POST.get('mobile_money_reference', '')
 
-        # Auto-calculate expected from system sales
         outlet_obj = get_object_or_404(Location, id=outlet_id)
-        expected = Sale.objects.filter(
-            outlet=outlet_obj, agent=request.user,
+
+        # Find all sales made by this agent at this outlet in the period
+        sales_in_period = Sale.objects.filter(
+            outlet=outlet_obj,
+            agent=request.user,
             sale_date__date__gte=period_start,
             sale_date__date__lte=period_end
-        ).aggregate(total=Sum('total_amount'))['total'] or 0
+        )
+        expected = sales_in_period.aggregate(
+            total=Sum('amount_paid')  # use amount_paid (what was actually collected)
+        )['total'] or 0
 
         col = AgentCollection.objects.create(
             agent=request.user, outlet=outlet_obj,
             period_start=period_start, period_end=period_end,
             cash_amount=float(cash), mobile_money_amount=float(mobile),
-            mobile_money_reference=mobile_ref, system_expected=expected
+            mobile_money_reference=mobile_ref,
+            system_expected=expected,
+            status='submitted'
         )
-        messages.success(request, f'Collection {col.ref} submitted. System expected: {expected}')
+        messages.success(request, f'Collection {col.ref} submitted. System expected: {expected} from {sales_in_period.count()} sale(s).')
         return redirect('reconciliation:agent_collection_list')
+
+    # Preview sales for the agent to help them fill the form correctly
+    recent_sales = Sale.objects.filter(
+        agent=request.user
+    ).order_by('-sale_date')[:10] if outlet else []
+
+    # Total by outlet for quick reference
+    outlet_sales_summary = None
+    if outlet:
+        outlet_sales_summary = Sale.objects.filter(
+            agent=request.user, outlet=outlet
+        ).aggregate(
+            total_amount=Sum('total_amount'),
+            total_paid=Sum('amount_paid'),
+            count=Sum('total_amount') / Sum('total_amount')
+        )
 
     context = {
         'outlet': outlet,
         'outlets': Location.objects.filter(location_type='outlet'),
+        'recent_sales': recent_sales,
+        'total_sales_count': Sale.objects.filter(agent=request.user, outlet=outlet).count() if outlet else 0,
+        'total_sales_amount': Sale.objects.filter(agent=request.user, outlet=outlet).aggregate(t=Sum('amount_paid'))['t'] or 0,
     }
     return render(request, 'reconciliation/submit_collection.html', context)
 
 
 @login_required
+@can_submit_collection
 def agent_collection_list(request):
     profile = getattr(request.user, 'userprofile', None)
     role = profile.role.name if (profile and profile.role) else ''
@@ -74,6 +103,7 @@ def agent_collection_list(request):
 
 
 @login_required
+@outlet_recon_access
 def review_agent_collection(request, pk):
     col = get_object_or_404(AgentCollection, pk=pk)
     if request.method == 'POST':
@@ -91,12 +121,14 @@ def review_agent_collection(request, pk):
 
 
 @login_required
+@outlet_recon_access
 def outlet_recon_list(request):
     recons = OutletReconciliation.objects.select_related('outlet', 'outlet_manager').order_by('-created_at')
     return render(request, 'reconciliation/outlet_recon_list.html', {'recons': recons})
 
 
 @login_required
+@outlet_recon_access
 def create_outlet_recon(request):
     profile = getattr(request.user, 'userprofile', None)
     outlet = profile.location if (profile and profile.location and profile.location.location_type == 'outlet') else None
@@ -143,6 +175,7 @@ def create_outlet_recon(request):
 
 
 @login_required
+@outlet_recon_access
 def review_outlet_recon(request, pk):
     recon = get_object_or_404(OutletReconciliation, pk=pk)
     if request.method == 'POST':
@@ -161,12 +194,14 @@ def review_outlet_recon(request, pk):
 
 
 @login_required
+@backoffice_or_above
 def bo_recon_list(request):
     recons = BackOfficeReconciliation.objects.select_related('backoffice_officer', 'accountant').order_by('-created_at')
     return render(request, 'reconciliation/bo_recon_list.html', {'recons': recons})
 
 
 @login_required
+@backoffice_or_above
 def create_bo_recon(request):
     if request.method == 'POST':
         period_start = request.POST.get('period_start')
@@ -192,6 +227,7 @@ def create_bo_recon(request):
 
 
 @login_required
+@accountant_only
 def signoff_bo_recon(request, pk):
     recon = get_object_or_404(BackOfficeReconciliation, pk=pk)
     if request.method == 'POST':

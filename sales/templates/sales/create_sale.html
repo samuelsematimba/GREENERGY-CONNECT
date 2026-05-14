@@ -2,85 +2,181 @@
 {% block title %}New Sale{% endblock %}
 {% block content %}
 <div class="page-header flex-between">
-    <div><h1>New Sale</h1><p>Record a customer sale transaction</p></div>
-    <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">← Back</a>
+    <div><h1>New Sale</h1><p>Search for a customer first, then add products</p></div>
+    <div class="btn-group">
+        <a href="{% url 'sales:create_customer' %}" class="btn btn-outline">+ New Customer</a>
+        <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">← Back</a>
+    </div>
 </div>
-<form method="POST" enctype="multipart/form-data">{% csrf_token %}
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
 
-    <div class="card">
-        <div class="card-title">Customer Information</div>
-        <div class="form-row">
-            <div class="form-group"><label>Full Name *</label><input type="text" name="full_name" required placeholder="Customer full name"></div>
-            <div class="form-group"><label>Gender</label>
-                <select name="gender"><option value="">—</option><option value="M">Male</option><option value="F">Female</option><option value="O">Other</option></select>
-            </div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>NIN (National ID) *</label><input type="text" name="nin" required placeholder="e.g. CM900XXXXX" maxlength="20" style="text-transform:uppercase;"></div>
-            <div class="form-group"><label>Phone Number *</label><input type="text" name="phone_number" required placeholder="e.g. 0701234567"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-group"><label>Village / Area</label><input type="text" name="village" placeholder="Village or area name"></div>
-            <div class="form-group"><label>District</label><input type="text" name="district" placeholder="District"></div>
-        </div>
-        <div class="form-group"><label>National ID Photo</label><input type="file" name="national_id_photo" accept="image/*"></div>
+<form method="POST" enctype="multipart/form-data" id="saleForm">{% csrf_token %}
+
+{# ─── STEP 1: CUSTOMER ─────────────────────────────────────────────────────── #}
+<div class="card" style="border-color:rgba(0,184,169,0.4);">
+    <div class="card-title">Step 1 — Select Customer</div>
+
+    {# Hidden field that holds the actual customer ID submitted #}
+    <input type="hidden" name="customer_id" id="selectedCustomerId" value="{{ preselected_customer.id|default:'' }}">
+
+    <div style="position:relative;">
+        <input type="text" id="customerSearch" placeholder="Search by name, NIN or phone number…"
+               value="{{ preselected_customer.full_name|default:'' }}"
+               autocomplete="off" oninput="searchCustomers(this.value)">
+        <div id="customerDropdown" style="display:none;position:absolute;z-index:100;width:100%;background:#1a3330;border:1px solid var(--card-border);border-radius:8px;margin-top:4px;max-height:280px;overflow-y:auto;"></div>
     </div>
 
-    <div class="card">
-        <div class="card-title">Sale Details</div>
-        {% if outlet %}
-            <input type="hidden" name="outlet" value="{{ outlet.id }}">
-            <div class="form-group"><label>Outlet</label><input type="text" value="{{ outlet.name }}" disabled></div>
+    {# Selected customer display #}
+    <div id="selectedCustomerBox" style="display:{% if preselected_customer %}block{% else %}none{% endif %};margin-top:12px;padding:14px;background:rgba(0,184,169,0.08);border-radius:10px;border:1px solid rgba(0,184,169,0.3);">
+        {% if preselected_customer %}
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+                <strong style="font-size:15px;">{{ preselected_customer.full_name }}</strong>
+                <span class="badge badge-green" style="margin-left:8px;">Selected</span><br>
+                <span class="text-muted" style="font-size:13px;">NIN: {{ preselected_customer.nin }} | Phone: {{ preselected_customer.phone_number }}</span><br>
+                <span class="text-muted" style="font-size:12px;">{{ preselected_customer.village }}{% if preselected_customer.district %}, {{ preselected_customer.district }}{% endif %}</span>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="clearCustomer()">✕ Change</button>
+        </div>
         {% else %}
-            <div class="form-group"><label>Outlet *</label>
-                <select name="outlet" required><option value="">Select outlet…</option>
+        <div id="selectedCustomerContent"></div>
+        {% endif %}
+    </div>
+
+    <div id="noCustomerMsg" style="display:{% if not preselected_customer %}block{% else %}none{% endif %};margin-top:10px;">
+        <p class="text-muted" style="font-size:13px;">
+            Can't find the customer?
+            <a href="{% url 'sales:create_customer' %}?next=sale" class="text-teal">Create a new customer →</a>
+        </p>
+    </div>
+</div>
+
+{# ─── STEP 2: OUTLET ───────────────────────────────────────────────────────── #}
+<div class="card">
+    <div class="card-title">Step 2 — Outlet & Payment</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Outlet *</label>
+            {% if outlet %}
+                <input type="hidden" name="outlet" value="{{ outlet.id }}">
+                <input type="text" value="{{ outlet.name }}" disabled>
+            {% else %}
+                <select name="outlet" required id="outletSelect" onchange="filterSubsidies()">
+                    <option value="">Select outlet…</option>
                     {% for o in outlets %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}
                 </select>
-            </div>
-        {% endif %}
-        <div class="form-row">
-            <div class="form-group"><label>Payment Method *</label>
-                <select name="payment_method" required>
-                    <option value="">Select…</option>
-                    <option value="cash">Cash</option>
-                    <option value="mobile_money">Mobile Money</option>
-                    <option value="credit">Credit</option>
-                </select>
-            </div>
-            <div class="form-group"><label>Amount Paid</label><input type="number" name="amount_paid" placeholder="0" step="0.01" min="0"></div>
+            {% endif %}
         </div>
-        <div class="form-row">
-            <div class="form-group"><label>Warranty Card</label><input type="file" name="warranty_card"></div>
-            <div class="form-group"><label>Receipt File</label><input type="file" name="receipt_file"></div>
+        <div class="form-group">
+            <label>Payment Method *</label>
+            <select name="payment_method" required>
+                <option value="">Select…</option>
+                <option value="cash">Cash</option>
+                <option value="mobile_money">Mobile Money</option>
+                <option value="credit">Credit</option>
+            </select>
         </div>
-        <div class="form-group"><label>Notes</label><textarea name="notes" placeholder="Optional sale notes…"></textarea></div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Amount Paid</label>
+            <input type="number" name="amount_paid" id="amountPaid" placeholder="0" step="0.01" min="0">
+        </div>
+        <div class="form-group">
+            <label>Notes</label>
+            <input type="text" name="notes" placeholder="Optional notes…">
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group"><label>Warranty Card</label><input type="file" name="warranty_card"></div>
+        <div class="form-group"><label>Receipt File</label><input type="file" name="receipt_file"></div>
     </div>
 </div>
 
-<div class="card" style="margin-top:20px;">
+{# ─── STEP 3: PRODUCTS ─────────────────────────────────────────────────────── #}
+<div class="card">
     <div class="card-title flex-between">
-        <span>Products / Items</span>
+        <span>Step 3 — Products</span>
         <div class="btn-group">
             <a href="{% url 'sales:scan_qr' %}" class="btn btn-outline btn-sm">📷 Scan QR</a>
-            <button type="button" class="btn btn-outline btn-sm" onclick="addSaleItem()">+ Add Item</button>
+            <button type="button" class="btn btn-outline btn-sm" onclick="addProductRow()">+ Add Product</button>
         </div>
     </div>
-    <div id="saleItems">
-        <div class="sale-item" style="display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:12px;margin-bottom:10px;align-items:end;">
-            <div class="form-group"><label>Product</label>
-                <select name="product_ids" onchange="fillPrice(this)">
-                    <option value="">Select product…</option>
-                    {% for p in products %}<option value="{{ p.id }}" data-price="{{ p.base_price }}">{{ p.name }}</option>{% endfor %}
+    <div id="productRows">
+        <div class="product-row" style="display:grid;grid-template-columns:3fr 2fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;">
+            <div class="form-group" style="margin:0;">
+                <label>Product</label>
+                <select name="product_ids" onchange="fillProductPrice(this)" style="font-size:13px;">
+                    <option value="">— Select product —</option>
+                    {% for p in products %}
+                    <option value="{{ p.id }}" data-price="{{ p.base_price }}" data-type="{{ p.product_type }}">
+                        {{ p.name }} — {{ p.base_price }}
+                    </option>
+                    {% endfor %}
                 </select>
             </div>
-            <div class="form-group"><label>Serial No.</label><input type="text" name="serial_numbers" placeholder="Scan or type" style="text-transform:uppercase;"></div>
-            <div class="form-group"><label>Qty</label><input type="number" name="quantities" value="1" min="1"></div>
-            <div class="form-group"><label>Unit Price</label><input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-input"></div>
+            <div class="form-group" style="margin:0;">
+                <label>Serial No.</label>
+                <input type="text" name="serial_numbers" placeholder="For serialized items" style="text-transform:uppercase;font-size:13px;">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Qty</label>
+                <input type="number" name="quantities" value="1" min="1" oninput="updateTotal()">
+            </div>
+            <div class="form-group" style="margin:0;">
+                <label>Unit Price</label>
+                <input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-field" oninput="updateTotal()">
+            </div>
+            <div style="padding-bottom:2px;">
+                <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button>
+            </div>
         </div>
     </div>
-    <div class="divider"></div>
-    <div style="text-align:right;"><span class="text-muted">Total: </span><span id="grandTotal" style="font-family:'Syne',sans-serif;font-size:22px;color:var(--teal);">0</span></div>
+</div>
+
+{# ─── COMBOS ───────────────────────────────────────────────────────────────── #}
+{% if combos %}
+<div class="card">
+    <div class="card-title flex-between">
+        <span>Combos</span>
+        <button type="button" class="btn btn-outline btn-sm" onclick="addComboRow()">+ Add Combo</button>
+    </div>
+    <div id="comboRows"></div>
+</div>
+{% endif %}
+
+{# ─── SUBSIDY ──────────────────────────────────────────────────────────────── #}
+<div class="card">
+    <div class="card-title">Subsidy (Optional)</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Apply Subsidy</label>
+            <select name="subsidy_id" id="subsidySelect" onchange="applySubsidy()">
+                <option value="">— No Subsidy —</option>
+                {% for s in subsidies %}
+                <option value="{{ s.id }}"
+                    data-type="{{ s.discount_type }}"
+                    data-value="{{ s.discount_value }}"
+                    data-outlets="{% for o in s.outlets.all %}{{ o.id }},{% endfor %}">
+                    {{ s.name }} ({{ s.get_discount_display_label }}) [{{ s.code }}]
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Discount Applied</label>
+            <input type="text" id="discountDisplay" value="—" disabled style="color:var(--teal);font-weight:600;">
+            <input type="hidden" name="subsidy_discount" id="subsidyDiscountInput" value="0">
+        </div>
+    </div>
+</div>
+
+{# ─── TOTALS ───────────────────────────────────────────────────────────────── #}
+<div class="card">
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+        <div style="font-size:14px;color:var(--muted);">Subtotal: <strong id="subtotalDisplay" style="color:var(--white);">0</strong></div>
+        <div style="font-size:14px;color:var(--muted);" id="discountRow">Subsidy Discount: <strong id="discountDisplay2" style="color:var(--success);">— 0</strong></div>
+        <div style="font-size:18px;color:var(--muted);">Grand Total: <span id="grandTotal" style="font-family:'Syne',sans-serif;font-size:28px;color:var(--teal);font-weight:700;">0</span></div>
+    </div>
 </div>
 
 <div class="btn-group mt-16">
@@ -88,32 +184,178 @@
     <a href="{% url 'sales:sale_list' %}" class="btn btn-outline">Cancel</a>
 </div>
 </form>
-{% endblock %}
-{% block extra_js %}
+
 <script>
-const prodOpts = `{% for p in products %}<option value="{{ p.id }}" data-price="{{ p.base_price }}">{{ p.name }}</option>{% endfor %}`;
-function fillPrice(sel) {
+// ── Product options for dynamic rows ─────────────────────────────────────────
+const productOptions = `{% for p in products %}<option value="{{ p.id }}" data-price="{{ p.base_price }}" data-type="{{ p.product_type }}">{{ p.name }} — {{ p.base_price }}</option>{% endfor %}`;
+const comboOptions = `{% for c in combos %}<option value="{{ c.id }}" data-price="{{ c.price }}">{{ c.name }} — {{ c.price }}</option>{% endfor %}`;
+
+// ── Customer search ───────────────────────────────────────────────────────────
+let searchTimer;
+function searchCustomers(q) {
+    clearTimeout(searchTimer);
+    const dropdown = document.getElementById('customerDropdown');
+    if (q.length < 2) { dropdown.style.display = 'none'; return; }
+    searchTimer = setTimeout(() => {
+        fetch(`{% url 'sales:customer_search_ajax' %}?q=${encodeURIComponent(q)}`)
+            .then(r => r.json())
+            .then(data => {
+                if (!data.customers.length) {
+                    dropdown.innerHTML = `<div style="padding:12px;color:var(--muted);font-size:13px;">No customers found. <a href="{% url 'sales:create_customer' %}?next=sale" style="color:var(--teal);">Create new →</a></div>`;
+                } else {
+                    dropdown.innerHTML = data.customers.map(c => `
+                        <div onclick="selectCustomer(${c.id}, '${c.full_name}', '${c.nin}', '${c.phone_number}', '${c.village}', '${c.district}', '${c.registered_at}', ${c.sales_count})"
+                             style="padding:12px 14px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,0.05);"
+                             onmouseover="this.style.background='rgba(0,184,169,0.1)'" onmouseout="this.style.background='none'">
+                            <strong style="font-size:14px;">${c.full_name}</strong>
+                            <span class="chip" style="margin-left:6px;">${c.sales_count} sale(s)</span><br>
+                            <span style="font-size:12px;color:var(--muted);">NIN: ${c.nin} | ${c.phone_number} | ${c.registered_at}</span>
+                        </div>`).join('');
+                }
+                dropdown.style.display = 'block';
+            });
+    }, 350);
+}
+
+function selectCustomer(id, name, nin, phone, village, district, outlet, sales) {
+    document.getElementById('selectedCustomerId').value = id;
+    document.getElementById('customerSearch').value = name;
+    document.getElementById('customerDropdown').style.display = 'none';
+    document.getElementById('selectedCustomerContent').innerHTML = `
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div>
+                <strong style="font-size:15px;">${name}</strong>
+                <span class="badge badge-green" style="margin-left:8px;">Selected</span><br>
+                <span class="text-muted" style="font-size:13px;">NIN: ${nin} | Phone: ${phone}</span><br>
+                <span class="text-muted" style="font-size:12px;">${village ? village + ', ' : ''}${district} | Registered at: ${outlet} | ${sales} previous sale(s)</span>
+            </div>
+            <button type="button" class="btn btn-outline btn-sm" onclick="clearCustomer()">✕ Change</button>
+        </div>`;
+    document.getElementById('selectedCustomerBox').style.display = 'block';
+    document.getElementById('noCustomerMsg').style.display = 'none';
+}
+
+function clearCustomer() {
+    document.getElementById('selectedCustomerId').value = '';
+    document.getElementById('customerSearch').value = '';
+    document.getElementById('selectedCustomerBox').style.display = 'none';
+    document.getElementById('noCustomerMsg').style.display = 'block';
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', e => {
+    if (!e.target.closest('#customerSearch') && !e.target.closest('#customerDropdown'))
+        document.getElementById('customerDropdown').style.display = 'none';
+});
+
+// ── Product rows ─────────────────────────────────────────────────────────────
+function fillProductPrice(sel) {
     const opt = sel.options[sel.selectedIndex];
-    const priceInput = sel.closest('.sale-item').querySelector('.price-input');
-    if (opt && opt.dataset.price) priceInput.value = opt.dataset.price;
+    const row = sel.closest('.product-row');
+    if (opt && opt.dataset.price) {
+        row.querySelector('.price-field').value = opt.dataset.price;
+        row.querySelector('[name="serial_numbers"]').placeholder =
+            opt.dataset.type === 'serialized' ? 'Serial required' : 'N/A';
+    }
     updateTotal();
 }
+
+function addProductRow() {
+    const div = document.createElement('div');
+    div.className = 'product-row';
+    div.style.cssText = 'display:grid;grid-template-columns:3fr 2fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;';
+    div.innerHTML = `
+        <div class="form-group" style="margin:0;"><label>Product</label>
+            <select name="product_ids" onchange="fillProductPrice(this)" style="font-size:13px;">
+                <option value="">— Select product —</option>${productOptions}
+            </select></div>
+        <div class="form-group" style="margin:0;"><label>Serial No.</label>
+            <input type="text" name="serial_numbers" placeholder="For serialized items" style="text-transform:uppercase;font-size:13px;"></div>
+        <div class="form-group" style="margin:0;"><label>Qty</label>
+            <input type="number" name="quantities" value="1" min="1" oninput="updateTotal()"></div>
+        <div class="form-group" style="margin:0;"><label>Unit Price</label>
+            <input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-field" oninput="updateTotal()"></div>
+        <div style="padding-bottom:2px;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button></div>`;
+    document.getElementById('productRows').appendChild(div);
+}
+
+function addComboRow() {
+    const div = document.createElement('div');
+    div.className = 'combo-row';
+    div.style.cssText = 'display:grid;grid-template-columns:3fr 1fr 1fr auto;gap:10px;margin-bottom:8px;align-items:end;';
+    div.innerHTML = `
+        <div class="form-group" style="margin:0;"><label>Combo</label>
+            <select name="combo_ids" onchange="fillComboPrice(this)" style="font-size:13px;">
+                <option value="">— Select combo —</option>${comboOptions}
+            </select></div>
+        <div class="form-group" style="margin:0;"><label>Qty</label>
+            <input type="number" name="quantities" value="1" min="1" oninput="updateTotal()"></div>
+        <div class="form-group" style="margin:0;"><label>Price</label>
+            <input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-field" oninput="updateTotal()"></div>
+        <div style="padding-bottom:2px;">
+            <button type="button" class="btn btn-danger btn-sm" onclick="removeRow(this)">✕</button></div>`;
+    document.getElementById('comboRows').appendChild(div);
+}
+
+function fillComboPrice(sel) {
+    const opt = sel.options[sel.selectedIndex];
+    const row = sel.closest('.combo-row');
+    if (opt && opt.dataset.price) row.querySelector('.price-field').value = opt.dataset.price;
+    updateTotal();
+}
+
+function removeRow(btn) {
+    btn.closest('.product-row, .combo-row').remove();
+    updateTotal();
+}
+
+// ── Totals ────────────────────────────────────────────────────────────────────
 function updateTotal() {
-    let total = 0;
-    document.querySelectorAll('.sale-item').forEach(item => {
-        const qty = parseFloat(item.querySelector('[name="quantities"]').value) || 0;
-        const price = parseFloat(item.querySelector('.price-input').value) || 0;
-        total += qty * price;
+    let subtotal = 0;
+    document.querySelectorAll('.product-row, .combo-row').forEach(row => {
+        const price = parseFloat(row.querySelector('.price-field')?.value) || 0;
+        const qty = parseInt(row.querySelector('[name="quantities"]')?.value) || 1;
+        subtotal += price * qty;
     });
+    const discount = parseFloat(document.getElementById('subsidyDiscountInput').value) || 0;
+    const total = Math.max(0, subtotal - discount);
+    document.getElementById('subtotalDisplay').textContent = subtotal.toLocaleString();
+    document.getElementById('discountDisplay2').textContent = '— ' + discount.toLocaleString();
+    document.getElementById('discountRow').style.display = discount > 0 ? 'flex' : 'none';
     document.getElementById('grandTotal').textContent = total.toLocaleString();
 }
-document.addEventListener('input', e => { if(e.target.name === 'quantities' || e.target.name === 'unit_prices') updateTotal(); });
-function addSaleItem() {
-    const div = document.createElement('div');
-    div.className = 'sale-item';
-    div.style.cssText = 'display:grid;grid-template-columns:3fr 1fr 1fr 1fr;gap:12px;margin-bottom:10px;align-items:end;';
-    div.innerHTML = `<div class="form-group"><label>Product</label><select name="product_ids" onchange="fillPrice(this)"><option value="">Select product…</option>${prodOpts}</select></div><div class="form-group"><label>Serial No.</label><input type="text" name="serial_numbers" placeholder="Scan or type" style="text-transform:uppercase;"></div><div class="form-group"><label>Qty</label><input type="number" name="quantities" value="1" min="1"></div><div class="form-group"><label>Unit Price</label><input type="number" name="unit_prices" placeholder="0" step="0.01" class="price-input"></div>`;
-    document.getElementById('saleItems').appendChild(div);
+
+// ── Subsidy ───────────────────────────────────────────────────────────────────
+function applySubsidy() {
+    const sel = document.getElementById('subsidySelect');
+    const opt = sel.options[sel.selectedIndex];
+    if (!opt.value) {
+        document.getElementById('subsidyDiscountInput').value = 0;
+        document.getElementById('discountDisplay').value = '—';
+        updateTotal(); return;
+    }
+    let subtotal = 0;
+    document.querySelectorAll('.price-field').forEach(inp => {
+        const qty = parseInt(inp.closest('[class]')?.querySelector('[name="quantities"]')?.value) || 1;
+        subtotal += (parseFloat(inp.value) || 0) * qty;
+    });
+    const dtype = opt.dataset.type, dval = parseFloat(opt.dataset.value) || 0;
+    const discount = dtype === 'percent' ? subtotal * (dval / 100) : dval;
+    document.getElementById('subsidyDiscountInput').value = discount.toFixed(2);
+    document.getElementById('discountDisplay').value = dtype === 'percent'
+        ? `${dval}% = ${discount.toLocaleString()}` : `${discount.toLocaleString()} off`;
+    updateTotal();
 }
+
+function filterSubsidies() {
+    const outletId = document.getElementById('outletSelect')?.value || '{{ outlet.id|default:"" }}';
+    document.querySelectorAll('#subsidySelect option').forEach(opt => {
+        if (!opt.value) return;
+        const outlets = (opt.dataset.outlets || '').split(',').filter(Boolean);
+        opt.hidden = outlets.length > 0 && !outlets.includes(String(outletId));
+    });
+}
+window.addEventListener('DOMContentLoaded', filterSubsidies);
 </script>
 {% endblock %}

@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Subsidies{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div>
+        <h1>Subsidies</h1>
+        <p>Manage discount schemes affiliated to products and outlets</p>
+    </div>
+    <a href="{% url 'products:create_subsidy' %}" class="btn btn-primary">+ New Subsidy</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-label">Total Subsidies</div>
+        <div class="stat-value">{{ subsidies.count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-label">Active</div>
+        <div class="stat-value" style="color:var(--success);">{{ subsidies|length }}</div>
+    </div>
+</div>
+
+<div class="table-wrap">
+    <table>
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Code</th>
+                <th>Discount</th>
+                <th>Funder</th>
+                <th>Products</th>
+                <th>Outlets</th>
+                <th>Valid</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for s in subsidies %}
+        <tr>
+            <td><strong>{{ s.name }}</strong></td>
+            <td><span class="chip">{{ s.code }}</span></td>
+            <td>
+                <strong class="text-teal">
+                    {% if s.discount_type == 'percent' %}{{ s.discount_value }}%
+                    {% else %}{{ s.discount_value }}{% endif %}
+                </strong>
+                <span class="text-muted"> off</span>
+            </td>
+            <td>{{ s.funder|default:"—" }}</td>
+            <td>
+                {% for p in s.products.all|slice:":3" %}
+                <span class="chip">{{ p.name }}</span>
+                {% endfor %}
+                {% if s.products.count > 3 %}
+                <span class="text-muted">+{{ s.products.count|add:"-3" }} more</span>
+                {% endif %}
+                {% if not s.products.count %}<span class="text-muted">All products</span>{% endif %}
+            </td>
+            <td>
+                {% for c in s.combos.all|slice:":3" %}
+                <span class="chip">{{ c.name }}</span>
+                {% endfor %}
+                {% if not s.combos.count %}<span class="text-muted">—</span>{% endif %}
+            </td>
+            <td>
+                {% for o in s.outlets.all|slice:":2" %}
+                <span class="chip">{{ o.name }}</span>
+                {% endfor %}
+                {% if s.outlets.count > 2 %}
+                <span class="text-muted">+{{ s.outlets.count|add:"-2" }} more</span>
+                {% endif %}
+                {% if not s.outlets.count %}<span class="text-muted">All outlets</span>{% endif %}
+            </td>
+            <td class="text-muted">
+                {% if s.valid_from %}{{ s.valid_from }} →{% endif %}
+                {% if s.valid_to %}{{ s.valid_to }}{% endif %}
+                {% if not s.valid_from and not s.valid_to %}No expiry{% endif %}
+            </td>
+            <td>
+                {% if s.status == 'active' %}<span class="badge badge-green">Active</span>
+                {% elif s.status == 'expired' %}<span class="badge badge-red">Expired</span>
+                {% else %}<span class="badge badge-gray">Inactive</span>{% endif %}
+            </td>
+            <td>
+                <a href="{% url 'products:edit_subsidy' s.pk %}" class="btn btn-outline btn-sm">Edit</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" style="text-align:center;color:var(--muted);padding:40px;">
+            No subsidies yet. <a href="{% url 'products:create_subsidy' %}" class="text-teal">Create the first one.</a>
+        </td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

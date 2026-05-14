@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from accounts.models import Location
-from products.models import Product, SerializedItem, Combo
+from products.models import Product, SerializedItem, Combo, Subsidy
 import random, string
 from django.utils import timezone
 
@@ -21,6 +21,11 @@ class Customer(models.Model):
     village = models.CharField(max_length=200, blank=True)
     district = models.CharField(max_length=200, blank=True)
     national_id_photo = models.ImageField(upload_to='national_ids/', null=True, blank=True)
+    registered_at = models.ForeignKey(
+        Location, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='customers',
+        help_text="Outlet where this customer was first registered"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -50,6 +55,14 @@ class Sale(models.Model):
     warranty_card = models.FileField(upload_to='warranty/', null=True, blank=True)
     receipt_file = models.FileField(upload_to='receipts/', null=True, blank=True)
     notes = models.TextField(blank=True)
+    subsidy = models.ForeignKey(
+        'products.Subsidy', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='sales'
+    )
+    subsidy_discount_applied = models.DecimalField(
+        max_digits=12, decimal_places=2, default=0,
+        help_text="Actual discount amount deducted at time of sale"
+    )
     sale_date = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

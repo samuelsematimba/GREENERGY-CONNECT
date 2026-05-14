@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Edit Subsidy — {{ subsidy.name }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>Edit Subsidy</h1><p>{{ subsidy.name }} ({{ subsidy.code }})</p></div>
+    <a href="{% url 'products:subsidy_list' %}" class="btn btn-outline">← Back</a>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+<div>
+<form method="POST">
+{% csrf_token %}
+<div class="card">
+    <div class="card-title">Subsidy Details</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Subsidy Name *</label>
+            <input type="text" name="name" value="{{ subsidy.name }}" required>
+        </div>
+        <div class="form-group">
+            <label>Code</label>
+            <input type="text" value="{{ subsidy.code }}" disabled style="opacity:0.5;cursor:not-allowed;">
+            <small class="text-muted">Code cannot be changed after creation</small>
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Description</label>
+        <textarea name="description">{{ subsidy.description }}</textarea>
+    </div>
+    <div class="form-group">
+        <label>Funder / Sponsor</label>
+        <input type="text" name="funder" value="{{ subsidy.funder }}">
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Discount Configuration</div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Discount Type *</label>
+            <select name="discount_type">
+                <option value="fixed" {% if subsidy.discount_type == 'fixed' %}selected{% endif %}>Fixed Amount</option>
+                <option value="percent" {% if subsidy.discount_type == 'percent' %}selected{% endif %}>Percentage</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Discount Value *</label>
+            <input type="number" name="discount_value" value="{{ subsidy.discount_value }}" step="0.01" min="0" required>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group">
+            <label>Valid From</label>
+            <input type="date" name="valid_from" value="{{ subsidy.valid_from|date:'Y-m-d' }}">
+        </div>
+        <div class="form-group">
+            <label>Valid To</label>
+            <input type="date" name="valid_to" value="{{ subsidy.valid_to|date:'Y-m-d' }}">
+        </div>
+    </div>
+    <div class="form-group">
+        <label>Status</label>
+        <select name="status">
+            <option value="active" {% if subsidy.status == 'active' %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if subsidy.status == 'inactive' %}selected{% endif %}>Inactive</option>
+            <option value="expired" {% if subsidy.status == 'expired' %}selected{% endif %}>Expired</option>
+        </select>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Applicable Products</div>
+    <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+    {% for p in products %}
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--card-border);font-size:13px;color:rgba(255,255,255,0.8);">
+        <input type="checkbox" name="products" value="{{ p.id }}" style="width:auto;" {% if p.id in selected_products %}checked{% endif %}>
+        <span>{{ p.name }}</span>
+        <span class="chip" style="margin-left:auto;">{{ p.sku }}</span>
+    </label>
+    {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Applicable Combos</div>
+    <p class="text-muted" style="margin-bottom:12px;font-size:13px;">
+        Select which combos this subsidy can also be applied to.
+    </p>
+    <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+    {% for c in combos %}
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--card-border);font-size:13px;color:rgba(255,255,255,0.8);">
+        <input type="checkbox" name="combos" value="{{ c.id }}" style="width:auto;">
+        <span>{{ c.name }}</span>
+        <span class="chip" style="margin-left:auto;">{{ c.code }}</span>
+        <span class="text-teal" style="font-size:12px;">{{ c.price }}</span>
+    </label>
+    {% empty %}
+    <p class="text-muted">No combos found. Create combos first under Products → Combos.</p>
+    {% endfor %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-title">Applicable Outlets</div>
+    <div style="max-height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;">
+    {% for o in outlets %}
+    <label style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;border:1px solid var(--card-border);font-size:13px;color:rgba(255,255,255,0.8);">
+        <input type="checkbox" name="outlets" value="{{ o.id }}" style="width:auto;" {% if o.id in selected_outlets %}checked{% endif %}>
+        <span>{{ o.name }}</span>
+        <span class="text-muted" style="margin-left:auto;font-size:12px;">{{ o.country }}</span>
+    </label>
+    {% endfor %}
+    </div>
+</div>
+
+<button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">Save Changes</button>
+</form>
+</div>
+
+<div>
+<div class="card">
+    <div class="card-title">Current Summary</div>
+    <table style="width:100%;font-size:13px;">
+        <tr><td style="color:var(--muted);padding:8px 0;">Code</td><td><span class="chip">{{ subsidy.code }}</span></td></tr>
+        <tr><td style="color:var(--muted);padding:8px 0;">Discount</td><td class="text-teal"><strong>{{ subsidy.get_discount_display_label }}</strong></td></tr>
+        <tr><td style="color:var(--muted);padding:8px 0;">Products</td><td>{{ subsidy.products.count }} product{{ subsidy.products.count|pluralize }}</td></tr>
+        <tr><td style="color:var(--muted);padding:8px 0;">Outlets</td><td>{{ subsidy.outlets.count }} outlet{{ subsidy.outlets.count|pluralize }}</td></tr>
+        <tr><td style="color:var(--muted);padding:8px 0;">Sales using this</td><td class="text-teal"><strong>{{ subsidy.sales.count }}</strong></td></tr>
+        <tr><td style="color:var(--muted);padding:8px 0;">Created</td><td>{{ subsidy.created_at|date:"d M Y" }}</td></tr>
+    </table>
+</div>
+</div>
+</div>
+{% endblock %}

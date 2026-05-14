@@ -2,31 +2,170 @@
 {% block title %}Submit Collection{% endblock %}
 {% block content %}
 <div class="page-header flex-between">
-    <div><h1>Submit Agent Collection</h1><p>Report your collections for the period</p></div>
-    <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline">← Back</a>
+    <div><h1>Submit Collection</h1>
+    <p>Report the cash and mobile money you have collected for a period</p></div>
+    <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline">← My Collections</a>
 </div>
-<div class="card" style="max-width:600px;">
-    <form method="POST">{% csrf_token %}
-        {% if outlet %}<input type="hidden" name="outlet" value="{{ outlet.id }}">
-        <div class="form-group"><label>Outlet</label><input type="text" value="{{ outlet.name }}" disabled></div>
-        {% else %}<div class="form-group"><label>Outlet</label>
-            <select name="outlet" required><option value="">Select outlet…</option>
-                {% for o in outlets %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}
-            </select></div>{% endif %}
-        <div class="form-row">
-            <div class="form-group"><label>Period From *</label><input type="date" name="period_start" required></div>
-            <div class="form-group"><label>Period To *</label><input type="date" name="period_end" required></div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+<div>
+
+{# ── Sales summary for this agent ── #}
+{% if outlet %}
+<div class="card" style="border-color:rgba(0,184,169,0.35);">
+    <div class="card-title">Your Sales at {{ outlet.name }}</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+        <div style="background:rgba(0,184,169,0.07);border-radius:8px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--teal);">{{ total_sales_count }}</div>
+            <div style="font-size:12px;color:var(--muted);">Total Sales Made</div>
         </div>
-        <div class="form-row">
-            <div class="form-group"><label>Cash Collected</label><input type="number" name="cash_amount" placeholder="0" step="0.01" min="0" value="0"></div>
-            <div class="form-group"><label>Mobile Money Amount</label><input type="number" name="mobile_money_amount" placeholder="0" step="0.01" min="0" value="0"></div>
+        <div style="background:rgba(0,184,169,0.07);border-radius:8px;padding:14px;text-align:center;">
+            <div style="font-size:24px;font-weight:700;color:var(--teal);">{{ total_sales_amount|floatformat:0 }}</div>
+            <div style="font-size:12px;color:var(--muted);">Total Amount Collected</div>
         </div>
-        <div class="form-group"><label>Mobile Money Reference</label><input type="text" name="mobile_money_reference" placeholder="Transaction reference number"></div>
-        <p class="text-muted mt-8">The system will auto-calculate the expected amount from your recorded sales.</p>
-        <div class="btn-group mt-16">
-            <button type="submit" class="btn btn-primary">Submit Collection</button>
-            <a href="{% url 'reconciliation:agent_collection_list' %}" class="btn btn-outline">Cancel</a>
-        </div>
-    </form>
+    </div>
+    <p class="text-muted" style="font-size:12px;">
+        ℹ The <strong style="color:var(--white);">System Expected</strong> on your collection is calculated automatically from your sales in the date range you enter below.
+    </p>
 </div>
+{% endif %}
+
+<form method="POST">
+{% csrf_token %}
+<div class="card">
+    <div class="card-title">Collection Details</div>
+
+    {% if not outlet %}
+    <div class="form-group">
+        <label>Outlet *</label>
+        <select name="outlet" required>
+            <option value="">Select outlet…</option>
+            {% for o in outlets %}<option value="{{ o.id }}">{{ o.name }}</option>{% endfor %}
+        </select>
+    </div>
+    {% else %}
+    <input type="hidden" name="outlet" value="{{ outlet.id }}">
+    <div class="form-group">
+        <label>Outlet</label>
+        <input type="text" value="{{ outlet.name }}" disabled>
+    </div>
+    {% endif %}
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Period Start *</label>
+            <input type="date" name="period_start" required id="periodStart" onchange="previewSales()">
+        </div>
+        <div class="form-group">
+            <label>Period End *</label>
+            <input type="date" name="period_end" required id="periodEnd" onchange="previewSales()">
+        </div>
+    </div>
+
+    {# Live sales preview ── #}
+    <div id="salesPreview" style="display:none;padding:12px;background:rgba(0,184,169,0.07);border-radius:8px;border-left:3px solid var(--teal);margin-bottom:16px;">
+        <div style="font-size:12px;font-weight:600;color:var(--teal);margin-bottom:6px;">SYSTEM EXPECTED FOR THIS PERIOD</div>
+        <div id="previewContent" class="text-muted" style="font-size:13px;">Calculating…</div>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Cash Collected</label>
+            <input type="number" name="cash_amount" id="cashAmount" placeholder="0" step="0.01" min="0" value="0" oninput="updateSubmitTotal()">
+        </div>
+        <div class="form-group">
+            <label>Mobile Money Collected</label>
+            <input type="number" name="mobile_money_amount" id="mobileAmount" placeholder="0" step="0.01" min="0" value="0" oninput="updateSubmitTotal()">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Mobile Money Reference</label>
+        <input type="text" name="mobile_money_reference" placeholder="Transaction ID or reference number">
+    </div>
+
+    <div style="padding:14px;background:rgba(255,255,255,0.03);border-radius:8px;border:1px solid var(--card-border);margin-bottom:16px;">
+        <div style="display:flex;justify-content:space-between;font-size:14px;margin-bottom:6px;">
+            <span class="text-muted">Total You Are Submitting:</span>
+            <strong id="submitTotal" style="color:var(--teal);font-size:18px;">0</strong>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary" style="width:100%;padding:12px;">Submit Collection</button>
+</div>
+</form>
+</div>
+
+<div>
+    <div class="card">
+        <div class="card-title">How This Works</div>
+        <div style="display:flex;flex-direction:column;gap:12px;font-size:13px;color:var(--muted);line-height:1.7;">
+            <div style="padding:12px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+                <strong style="color:var(--white);">1. Select your period</strong><br>
+                Choose the start and end date for the collection. The system will automatically calculate what you should have collected based on sales you recorded in that period.
+            </div>
+            <div style="padding:12px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+                <strong style="color:var(--white);">2. Enter what you have</strong><br>
+                Count your cash and check your mobile money. Enter both amounts. The total you submit will be compared against the system expected.
+            </div>
+            <div style="padding:12px;background:rgba(0,184,169,0.06);border-radius:8px;border-left:3px solid var(--teal);">
+                <strong style="color:var(--white);">3. Outlet Manager reviews</strong><br>
+                Your Outlet Manager will review the submission. If the amounts match, it will be marked <strong style="color:var(--success);">Balanced</strong>. If they don't match, a <strong style="color:var(--danger);">Discrepancy</strong> will be raised.
+            </div>
+        </div>
+    </div>
+
+    {% if recent_sales %}
+    <div class="card" style="margin-top:0;">
+        <div class="card-title">Your Recent Sales</div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Date</th><th>Ref</th><th>Total</th><th>Paid</th></tr></thead>
+                <tbody>
+                {% for s in recent_sales %}
+                <tr>
+                    <td class="text-muted">{{ s.sale_date|date:"d M Y" }}</td>
+                    <td><span class="chip">{{ s.sale_ref }}</span></td>
+                    <td>{{ s.total_amount|floatformat:0 }}</td>
+                    <td><strong class="text-teal">{{ s.amount_paid|floatformat:0 }}</strong></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <p class="text-muted" style="font-size:11px;margin-top:8px;">Showing your last 10 sales. The system expected is calculated from <strong>amount paid</strong> in your selected date range.</p>
+    </div>
+    {% endif %}
+</div>
+</div>
+
+<script>
+function updateSubmitTotal() {
+    const cash = parseFloat(document.getElementById('cashAmount').value) || 0;
+    const mobile = parseFloat(document.getElementById('mobileAmount').value) || 0;
+    document.getElementById('submitTotal').textContent = (cash + mobile).toLocaleString();
+}
+
+function previewSales() {
+    const start = document.getElementById('periodStart').value;
+    const end = document.getElementById('periodEnd').value;
+    if (!start || !end) return;
+
+    const preview = document.getElementById('salesPreview');
+    const content = document.getElementById('previewContent');
+    preview.style.display = 'block';
+    content.textContent = 'Calculating from your sales in this period…';
+
+    // Filter the recent sales table visually as a hint
+    const rows = document.querySelectorAll('.table-wrap tbody tr');
+    rows.forEach(row => {
+        const dateCell = row.querySelector('td:first-child');
+        if (!dateCell) return;
+        // Just highlight rows — full calculation is done server-side on submit
+    });
+
+    content.innerHTML = `Period: <strong style="color:var(--white);">${start}</strong> to <strong style="color:var(--white);">${end}</strong><br>
+    The exact system expected amount will be calculated automatically when you submit based on your recorded sales in this date range.`;
+}
+</script>
 {% endblock %}

@@ -102,7 +102,7 @@ class StockTransfer(models.Model):
         ('discrepancy', 'Discrepancy Flagged'),
     ]
     transfer_ref = models.CharField(max_length=20, unique=True, default=generate_transfer_ref)
-    stock_request = models.OneToOneField(StockRequest, on_delete=models.CASCADE, related_name='transfer', null=True, blank=True)
+    stock_request = models.ForeignKey(StockRequest, on_delete=models.CASCADE, related_name='transfers', null=True, blank=True)
     from_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='outbound_transfers')
     to_location = models.ForeignKey(Location, on_delete=models.CASCADE, related_name='inbound_transfers')
     dispatched_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='dispatched_transfers')

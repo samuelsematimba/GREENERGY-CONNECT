@@ -28,7 +28,13 @@
                     <tbody>
                     {% for item in sale.items.all %}
                     <tr>
-                        <td>{{ item.product.name|default:item.combo.name }}</td>
+                        <td>
+                            {% if item.product %}
+                                {{ item.product.name }}
+                            {% else %}
+                                {{ item.combo.name }}
+                            {% endif %}
+                        </td>
                         <td>{% if item.serialized_item %}<code>{{ item.serialized_item.serial_number }}</code>{% else %}—{% endif %}</td>
                         <td>{{ item.quantity }}</td>
                         <td>{{ item.unit_price|floatformat:0 }}</td>

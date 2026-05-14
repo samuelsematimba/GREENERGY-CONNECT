@@ -118,3 +118,70 @@ class PriceHistory(models.Model):
     class Meta:
         ordering = ['-changed_at']
         verbose_name_plural = "Price Histories"
+
+
+class Subsidy(models.Model):
+    """
+    A subsidy is a discount/funding scheme affiliated to specific
+    products and specific outlet locations.
+    """
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('inactive', 'Inactive'),
+        ('expired', 'Expired'),
+    ]
+    name = models.CharField(max_length=200)
+    code = models.CharField(max_length=50, unique=True)
+    description = models.TextField(blank=True)
+    combos = models.ManyToManyField(
+        'Combo', blank=True, related_name='subsidies',
+        help_text="Combos this subsidy can be applied to"
+    )
+
+    # Financial — either a fixed amount off or a percentage
+    discount_type = models.CharField(
+        max_length=10,
+        choices=[('fixed', 'Fixed Amount'), ('percent', 'Percentage')],
+        default='fixed'
+    )
+    discount_value = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        help_text="Amount in currency if fixed, or % value if percentage"
+    )
+
+    # Scope — which products and outlets this subsidy applies to
+    products = models.ManyToManyField(
+        Product, blank=True, related_name='subsidies',
+        help_text="Products this subsidy can be applied to"
+    )
+    outlets = models.ManyToManyField(
+        Location, blank=True, related_name='subsidies',
+        limit_choices_to={'location_type': 'outlet'},
+        help_text="Outlets where this subsidy is available"
+    )
+
+    # Validity
+    valid_from = models.DateField(null=True, blank=True)
+    valid_to = models.DateField(null=True, blank=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+
+    # Funding source (e.g. government, NGO, internal)
+    funder = models.CharField(max_length=200, blank=True)
+
+    created_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, related_name='subsidies_created'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.code})"
+
+    def get_discount_display_label(self):
+        if self.discount_type == 'percent':
+            return f"{self.discount_value}% off"
+        return f"{self.discount_value} off"
+
+    class Meta:
+        verbose_name_plural = "Subsidies"
+        ordering = ['-created_at']

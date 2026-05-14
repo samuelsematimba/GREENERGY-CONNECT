@@ -41,6 +41,12 @@ INSTALLED_APPS = [
     #my apps
     'users',
     'GREENERGYFORMS',
+    'accounts',
+    'products',
+    'stock',
+    'sales',
+    'reconciliation',
+    'reports',
     #other apps from other developers
     #'bootstrap4'
     'django.contrib.admin',
@@ -76,6 +82,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'accounts.context_processors.user_role',
             ],
         },
     },
@@ -149,7 +156,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 #auth redirects
 # Auth redirects
-LOGIN_URL = 'users:loginx'
-LOGIN_REDIRECT_URL = 'GREENERGYFORMS:index'
-LOGOUT_REDIRECT_URL = 'users:loginx'
+LOGIN_URL = 'accounts:loginx'
+LOGIN_REDIRECT_URL = 'accounts:dashboard'
+LOGOUT_REDIRECT_URL = 'accounts:loginx'
 LOGOUT_REDIRECT_URL= '/'

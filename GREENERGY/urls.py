@@ -20,7 +20,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('',include('users.urls')),
+    #path('',include('users.urls')),
     path('app', include('GREENERGYFORMS.urls')),
     path('admin/', admin.site.urls),
+    path('', include('accounts.urls', namespace='accounts')),
+    path('products/', include('products.urls', namespace='products')),
+    path('stock/', include('stock.urls', namespace='stock')),
+    path('sales/', include('sales.urls', namespace='sales')),
+    path('reconciliation/', include('reconciliation.urls', namespace='reconciliation')),
+    path('reports/', include('reports.urls', namespace='reports')),
+    #path('forms/', include('GREENERGYFORMS.urls', namespace='GREENERGYFORMS')),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

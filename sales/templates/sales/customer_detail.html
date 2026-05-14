@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}{{ customer.full_name }}{% endblock %}
+{% block content %}
+<div class="page-header flex-between">
+    <div><h1>{{ customer.full_name }}</h1><p>Customer Profile</p></div>
+    <div class="btn-group">
+        <a href="{% url 'sales:create_sale' %}?customer_id={{ customer.pk }}" class="btn btn-primary">+ New Sale</a>
+        <a href="{% url 'sales:customer_list' %}" class="btn btn-outline">← Customers</a>
+    </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:24px;">
+<div>
+    <div class="card">
+        <div class="card-title">Customer Details</div>
+        {% if customer.national_id_photo %}
+        <img src="{{ customer.national_id_photo.url }}" alt="National ID" style="width:100%;border-radius:8px;margin-bottom:16px;">
+        {% endif %}
+        <table style="width:100%;font-size:13px;">
+            <tr><td style="color:var(--muted);padding:7px 0;">Full Name</td><td><strong>{{ customer.full_name }}</strong></td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">NIN</td><td><span class="chip">{{ customer.nin }}</span></td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">Phone</td><td>{{ customer.phone_number }}</td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">Gender</td><td>{{ customer.get_gender_display|default:"—" }}</td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">Village</td><td>{{ customer.village|default:"—" }}</td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">District</td><td>{{ customer.district|default:"—" }}</td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">Registered At</td><td>{{ customer.registered_at.name|default:"—" }}</td></tr>
+            <tr><td style="color:var(--muted);padding:7px 0;">Registered</td><td>{{ customer.created_at|date:"d M Y" }}</td></tr>
+        </table>
+    </div>
+    <div class="stats-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="stat-card">
+            <div class="stat-label">Total Sales</div>
+            <div class="stat-value">{{ sales.count }}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value" style="font-size:20px;">{{ total_spent|floatformat:0 }}</div>
+        </div>
+    </div>
+</div>
+
+<div>
+    <div class="card">
+        <div class="card-title">Purchase History</div>
+        {% if sales %}
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>Sale Ref</th><th>Date</th><th>Outlet</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+                <tbody>
+                {% for s in sales %}
+                <tr>
+                    <td><a href="{% url 'sales:sale_detail' s.pk %}" class="text-teal"><strong>{{ s.sale_ref }}</strong></a></td>
+                    <td class="text-muted">{{ s.sale_date|date:"d M Y" }}</td>
+                    <td>{{ s.outlet.name }}</td>
+                    <td>
+                        {% for item in s.items.all|slice:":2" %}
+                        <span class="chip">{% if item.product %}{{ item.product.name }}{% elif item.combo %}{{ item.combo.name }}{% endif %}</span>
+                        {% endfor %}
+                        {% if s.items.count > 2 %}<span class="text-muted">+{{ s.items.count|add:"-2" }} more</span>{% endif %}
+                    </td>
+                    <td><strong>{{ s.total_amount }}</strong></td>
+                    <td>
+                        {% if s.status == 'completed' %}<span class="badge badge-green">Completed</span>
+                        {% elif s.status == 'pending_payment' %}<span class="badge badge-yellow">Pending</span>
+                        {% else %}<span class="badge badge-red">Cancelled</span>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="text-align:center;padding:24px;">No sales recorded for this customer yet.</p>
+        {% endif %}
+    </div>
+</div>
+</div>
+{% endblock %}

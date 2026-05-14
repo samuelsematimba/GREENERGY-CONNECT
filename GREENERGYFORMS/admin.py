@@ -9,6 +9,7 @@ from.models import Qrcodes_double
 from django.contrib import admin
 from.models import EmpowerCustomer,EmpowerSale,EmpowerClaim
 
+
 admin.site.register(EmpowerCustomer)
 admin.site.register(EmpowerClaim)
 admin.site.register(EmpowerSale)
